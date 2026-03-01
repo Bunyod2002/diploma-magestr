@@ -1,0 +1,117 @@
+
+# ruff: noqa: F403, F405
+from start import T
+from Data import *
+from math import exp
+from functions import *  
+from gui import create_default_temp_plot
+h = 2.25
+T0 = T
+dtime = 600
+time = 0.05
+n = 0
+plotter = create_default_temp_plot()
+
+
+T1 = [T0[-1]] + [0] * N
+def part_x(n, f, h, G):
+    global i, T1
+    dx = h / n
+    dt_dx = dt / dx
+    for j in range(n):
+        t_i = T0[i]  # T_i-1_k
+        t_i_1 = T0[i-1]  # T_i_k
+        r = ro(t_i_1 - 273.15)
+        t_k_1 = round(t_i + dt_dx * (G* cp_Pb*(t_i_1 - t_i)) / (cp_Pb * r * f), 3)
+        T1[i] = t_k_1
+        i += 1
+
+step = 0
+while time < dtime:
+    # Активная зона
+    if time < 120:
+        G = Gpb * exp(-time/60)
+    Q_veg = 0.065 * Q * (time ** (-0.2) - (time + 2592000) ** (-0.2))
+    i = 1
+    dx = h_az / n_az
+    dt_dx = dt / dx
+    h = 2.25
+    z = 0
+    plotter.push_point("AZ_in", time, T1[i-1])
+    for j in range(n_az):
+        t_i = T0[i]  # T_i-1_k
+        t_i_1 = T0[i-1]  # T_i_k
+        r = ro(t_i_1 - 273.15)
+        t_k_1 = round(t_i + dt_dx * (G* cp_Pb*(t_i_1 - t_i) + ql(Q_veg, z) * dx) / (cp_Pb * r * f_az), 3)
+        T1[i] = t_k_1
+        h += dx
+        i += 1
+        z += dx
+    plotter.push_point("AZ_out", time, T1[i-1])
+    # Область до тягового участка
+    part_x(n_1, f_1, h_1, G)
+    # Тяговый участок
+    part_x(n_2, f_2, h_2, G)
+    # Парогенератор
+    h = 7.75
+    dx = h_pg / n_pg
+    dt_dx = dt / dx
+    plotter.push_point("PG_in", time, T1[i-1])
+    for j in range(n_pg):
+        t_i = T0[i]  # T_i-1_k
+        t_i_1 = T1[i - 1]  # T_i_k
+        r = ro(t_i_1 - 273.15)
+        alfa = alphaPb(r, f_pg, dg_pg, G)
+        t_k_1 = round(t_i + dt_dx * (G * cp_Pb * (t_i_1 - t_i) + alfa * s_pg * (T_pg - t_i)) / (r * f_pg * cp_Pb), 3)
+        T1[i] = t_k_1
+        h -= dx
+        i += 1
+    plotter.push_point("PG_out", time, T1[i-1])
+    # Вертикальный участок с ГЦН
+    part_x(n_3, f_3, h_3, G)
+    # Опускной участок
+    part_x(n_4, f_4, h_4, G)
+    # Горизонтальный участок
+    part_x(n_5, f_5, l_5, G)
+    # Подъемный участок до активной зоны
+    part_x(n_6, f_6, h_6, G)
+    
+    time += dt
+    T0 = T1[:]
+    T1 = [T1[-1]] + [0] * N
+    step += 1
+    if step % 50 == 0:
+        plotter.redraw()
+plotter.hold()
+
+
+'''i = 0
+p = 0
+for j in range(n_az):
+    p += dp(T_k[i], h_az / n_az, f_az, 'up', dg_az)
+    i += 1
+for j in range(n_1):
+    p += dp(T_k[i], h_1 / n_1, f_1, 'up')
+    i += 1
+for j in range(n_2):
+    p += dp(T_k[i], h_2 / n_2, f_2, 'up')
+    i += 1
+for j in range(n_pg):
+    p += dp(T_k[i], h_pg / n_pg, f_pg, 'down', dg_pg)
+    i += 1
+for j in range(n_3):
+    p += dp(T_k[i], h_3 / n_3, f_3, 'up')
+    i += 1
+for j in range(n_4):
+    p += dp(T_k[i], h_4 / n_4, f_4, 'down')
+    i += 1
+for j in range(n_5):
+    p += dp(T_k[i], l_5 / n_5, f_5, 'none')
+    i += 1
+for j in range(n_6):
+    p += dp(T_k[i], h_6 / n_6, f_6, 'up')
+    i += 1'''
+
+
+
+
