@@ -85,32 +85,6 @@ while time < dtime:
 plotter.hold()
 
 
-'''i = 0
-p = 0
-for j in range(n_az):
-    p += dp(T_k[i], h_az / n_az, f_az, 'up', dg_az)
-    i += 1
-for j in range(n_1):
-    p += dp(T_k[i], h_1 / n_1, f_1, 'up')
-    i += 1
-for j in range(n_2):
-    p += dp(T_k[i], h_2 / n_2, f_2, 'up')
-    i += 1
-for j in range(n_pg):
-    p += dp(T_k[i], h_pg / n_pg, f_pg, 'down', dg_pg)
-    i += 1
-for j in range(n_3):
-    p += dp(T_k[i], h_3 / n_3, f_3, 'up')
-    i += 1
-for j in range(n_4):
-    p += dp(T_k[i], h_4 / n_4, f_4, 'down')
-    i += 1
-for j in range(n_5):
-    p += dp(T_k[i], l_5 / n_5, f_5, 'none')
-    i += 1
-for j in range(n_6):
-    p += dp(T_k[i], h_6 / n_6, f_6, 'up')
-    i += 1'''
 
 
 
