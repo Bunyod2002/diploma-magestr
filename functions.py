@@ -28,25 +28,3 @@ def vel(f, T):
     return Gpb / (ro(T - 273.15) * f)
 
 
-def dp(T1, x, f, direction, d = 0):
-    if d == 0:
-        d = (4 * f / pi) ** 0.5
-    r = ro(T1 - 273.15)
-    w = vel(f, T1)
-    v = (43.8 - 7.57 * 0.01 * (T1 - 273.15) + 0.467 * 0.0001 * (T1 - 273.15)**2) * 10 **(-8)  # кинематическая вязкость
-    Re = w * d / v
-    if Re < 2300 and Re > 0:
-        e_fric = 64 / Re
-    elif Re > 0:
-        e_fric = (1.82*log10(Re) - 1.64)**(-2) # коэффициент потери на трение
-    else:
-        e_fric = 0
-    dp_fric = e_fric*x*r*w*w*0.5/d
-    if direction == 'up':
-        dp_polez = r * g * x
-    elif direction == 'down':
-        dp_polez = -r * g * x
-    else:
-        dp_polez = 0
-    return dp_fric + dp_polez
-
