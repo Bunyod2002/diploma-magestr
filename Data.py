@@ -37,6 +37,7 @@ f_pg = 4.5
 s_pg = s - f_pg
 d_tube = (4 * s_pg / pi) ** 0.5
 dg_pg = 4 * f_pg / (pi * (d_tube + 8 * d_pg))
+dg_pg = 0.02
 h_pg = 7.75 - 3.05
 n_pg = 47
 # Подъемный участок через ГЦН
