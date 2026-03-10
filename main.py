@@ -4,15 +4,16 @@ from start import T
 from Data import *
 from math import exp
 from functions import *  
-from gui import create_default_temp_plot
+
 h = 2.25
 T0 = T
 dtime = 600
 time = 0.05
 n = 0
-plotter = create_default_temp_plot()
 
-
+# Цикл естественной циркуляции
+# 1.Активная зона  2.Область до тягового участка  3. Тяговый участок до отметки естественной циркуляции
+# 4. Горизонтальный участок до САОР  5.Теплообменник Фильда  6. Опускной участок 7. Горизонтальный участок до АЗ 
 T1 = [T0[-1]] + [0] * N
 def part_x(n, f, h, G):
     global i, T1
@@ -25,8 +26,7 @@ def part_x(n, f, h, G):
         t_k_1 = round(t_i + dt_dx * (G* cp_Pb*(t_i_1 - t_i)) / (cp_Pb * r * f), 3)
         T1[i] = t_k_1
         i += 1
-
-step = 0
+        
 while time < dtime:
     # Активная зона
     if time < 120:
@@ -37,7 +37,6 @@ while time < dtime:
     dt_dx = dt / dx
     h = 2.25
     z = 0
-    plotter.push_point("AZ_in", time, T1[i-1])
     for j in range(n_az):
         t_i = T0[i]  # T_i-1_k
         t_i_1 = T0[i-1]  # T_i_k
@@ -47,7 +46,6 @@ while time < dtime:
         h += dx
         i += 1
         z += dx
-    plotter.push_point("AZ_out", time, T1[i-1])
     # Область до тягового участка
     part_x(n_1, f_1, h_1, G)
     # Тяговый участок
@@ -56,7 +54,7 @@ while time < dtime:
     h = 7.75
     dx = h_pg / n_pg
     dt_dx = dt / dx
-    plotter.push_point("PG_in", time, T1[i-1])
+
     for j in range(n_pg):
         t_i = T0[i]  # T_i-1_k
         t_i_1 = T1[i - 1]  # T_i_k
@@ -66,23 +64,12 @@ while time < dtime:
         T1[i] = t_k_1
         h -= dx
         i += 1
-    plotter.push_point("PG_out", time, T1[i-1])
-    # Вертикальный участок с ГЦН
-    part_x(n_3, f_3, h_3, G)
-    # Опускной участок
-    part_x(n_4, f_4, h_4, G)
-    # Горизонтальный участок
-    part_x(n_5, f_5, l_5, G)
-    # Подъемный участок до активной зоны
-    part_x(n_6, f_6, h_6, G)
+
     
     time += dt
     T0 = T1[:]
     T1 = [T1[-1]] + [0] * N
-    step += 1
-    if step % 50 == 0:
-        plotter.redraw()
-plotter.hold()
+
 
 
 
