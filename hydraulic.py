@@ -3,11 +3,11 @@ from functions import *
 from math import log10
 from Data import g
 
-def dp_friction(T1, x, f, d = 0):
+def dp_friction(G, T1, x, f, d = 0):
     if d == 0:
         d = (4 * f / pi) ** 0.5
     r = ro(T1 - 273.15)
-    w = vel(f, T1)
+    w = vel(G, f, T1)
     v = (43.8 - 7.57 * 0.01 * (T1 - 273.15) + 0.467 * 0.0001 * (T1 - 273.15)**2) * 10 **(-8)  # кинематическая вязкость
     Re = w * d / v
     if Re < 2300 and Re > 0:

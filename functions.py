@@ -24,7 +24,7 @@ def ql(Q, z):
     Z = 1.0 + a * cos(pi * x) # среднее(Z)=1 → ∫ ql = Q
     return ql_avg * Z         # Вт/м
 
-def vel(f, T):
-    return Gpb / (ro(T - 273.15) * f)
+def vel(G, f, T):
+    return G / (ro(T - 273.15) * f)
 
 
