@@ -1,7 +1,6 @@
-from Data import *
+from start_data import *
 from functions import * 
 
-h = 2.25
 T_k = [0] * (N + 1)
 dtime = 250
 time = 0
@@ -66,3 +65,4 @@ while time < dtime:
     T_k_1 = [T0] + [0] * N
     
 T = T_k
+print(T)
