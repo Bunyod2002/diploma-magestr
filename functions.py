@@ -1,16 +1,16 @@
 # ruff: noqa: F403, F405
-from Data import *  
+import Data as dt
 from math import pi, e
 from math import log10, cos
 
 def mass(ro, x, f):  # функция считает массу свинца
     return round(ro * x * f, 3)
 
-def alphaPb(ro, f, d, G=Gpb):  # альфа свинца в зависимости от плотности
+def alphaPb(ro, f, d, G):  # альфа свинца в зависимости от плотности
     vPb = 4 * G / (ro * f)  # скорость свинца
-    PePb = vPb * d / aPb  # число Пекле
+    PePb = vPb * d / dt.aPb  # число Пекле
     Nu = 5 + 0.025 * PePb ** 0.8  # число Нуссельта
-    alfaPb = Nu * lambdaPb / d
+    alfaPb = Nu * dt.lambdaPb / d
     return round(alfaPb, 3)
 
 def ro(t: float):   # плотность свинца в зависимости от температуры в градусах
@@ -18,14 +18,14 @@ def ro(t: float):   # плотность свинца в зависимости 
 
 def ql(Q, z):
     kz = 1.5                  # максимум = 1.5·среднего
-    ql_avg = Q / h_az         # средняя линейная мощность
+    ql_avg = Q / dt.h_az         # средняя линейная мощность
     a = kz - 1.0              # a=0.5
-    x = (0.5*h_az - z) / (0.5*h_az)
+    x = (0.5*dt.h_az - z) / (0.5*dt.h_az)
     Z = 1.0 + a * cos(pi * x) # среднее(Z)=1 → ∫ ql = Q
     return ql_avg * Z         # Вт/м
 
-def vel(f, T):
-    return Gpb / (ro(T - 273.15) * f)
+def vel(f, T, G):
+    return G / (ro(T - 273.15) * f)
 
 
 def dp(T1, x, f, direction, d = 0):
