@@ -5,7 +5,7 @@ import functions as fc
 import saor
 T0 = [0] * (dt.N + 1)
 h = 2.25
-dtime = 300
+dtime = 500
 time = 0.05
 n = 0
 # Цикл естественной циркуляции
@@ -27,7 +27,7 @@ def part_x(n, f, h, G):
 while time < dtime:
     # Активная зона
     G = dt.Gpb
-    Q_veg = 0.065 * dt.Q
+    Q_veg = 0.065 * dt.Q * (600 ** (-0.2) - (600 + 2592000) ** (-0.2))
     i = 1
     dx = dt.h_az / dt.n_az
     dt_dx = dt.dt / dx
