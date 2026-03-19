@@ -13,6 +13,11 @@ def alphaPb(ro, f, d, G):  # альфа свинца в зависимости �
     alfaPb = Nu * dt.lambdaPb / d
     return round(alfaPb, 3)
 
+def kurrent(f, T, G, x, dt):
+    v = vel(f, T, G)
+    if not x / v > dt:
+        raise ValueError('слишком большой шаг по времени')
+
 def ro(t: float):   # плотность свинца в зависимости от температуры в градусах
     return round(1000*(11.05 - 12.49 * t * 0.0001), 3)
 
@@ -26,7 +31,6 @@ def ql(Q, z):
 
 def vel(f, T, G):
     return G / (ro(T - 273.15) * f)
-
 
 def dp(T1, x, f, direction, d = 0):
     if d == 0:
