@@ -74,7 +74,7 @@ while time < dtime:
         time += dt.dt
         T0 = T1[:]
         T1 = [T1[-1]] + [0] * dt.N
-        print(T1)
+        print(G)
     else:
         G = G * (p[1] / p[0]) ** 2
         T0 = T0_old
