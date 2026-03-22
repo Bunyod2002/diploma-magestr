@@ -7,14 +7,15 @@ def mass(ro, x, f):  # функция считает массу свинца
     return round(ro * x * f, 3)
 
 def alphaPb(ro, f, d, G):  # альфа свинца в зависимости от плотности
+    """На вход подается плотность, проходное сечение, гидравлический диаметр, расход"""
     vPb = 4 * G / (ro * f)  # скорость свинца
     PePb = vPb * d / dt.aPb  # число Пекле
     Nu = 5 + 0.025 * PePb ** 0.8  # число Нуссельта
     alfaPb = Nu * dt.lambdaPb / d
     return round(alfaPb, 3)
 
-def kurrent(f, T, G, x, dt):
-    v = vel(f, T, G)
+def kurrent(f, T, G, x, dt): # условие куррента
+    v = vel(f, T, G) # считаем скорость
     if not x / v > dt:
         raise ValueError('слишком большой шаг по времени')
 
@@ -29,7 +30,10 @@ def ql(Q, z):
     Z = 1.0 + a * cos(pi * x) # среднее(Z)=1 → ∫ ql = Q
     return ql_avg * Z         # Вт/м
 
-def vel(f, T, G):
+def vel(f, T, G): #скорость свинца, м^2, K, кг/c
     return G / (ro(T - 273.15) * f)
+
+def residual_power(time): # остаточное тепловыделение в зависимости от времени
+    return 0.065 * dt.Q * (time ** (-0.2) - (time + 2592000.0) ** (-0.2))
 
 
