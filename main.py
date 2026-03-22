@@ -79,8 +79,6 @@ while time < dtime:
         T0 = T0_old
         T1 = T1_old
         print(G)
-    T0 = T1[:]
-    T1 = [T1[-1]] + [0] * dt.N
     #if step % 10 == 0:
         #plotter.redraw()
     #step += 1
