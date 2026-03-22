@@ -8,7 +8,7 @@ import hydraulic as hc
 
 #from gui import create_default_temp_plot
 #plotter = create_default_temp_plot()
-T0 = start.T
+T0 = start.start_calc(dt.Gpb, 773.15)
 h = 2.25
 dtime = 100
 time = 60
@@ -69,18 +69,18 @@ while time < dtime:
     part(dt.n_4, dt.f_4, dt.h_4, G)
     # Горизонтальный участок до АЗ
     part(dt.n_5, dt.f_5, dt.l_5, G)
-    p = hc.p_full(T1)
+    p = hc.p_full(G, T1)
     if abs(p[0] - p[1]) < 5:
         time += dt.dt
         T0 = T1[:]
         T1 = [T1[-1]] + [0] * dt.N
-        print(G)
     else:
-        G = G * (p[1] / p[0]) ** 2
+        G = G * (p[1] / p[0])
         T0 = T0_old
         T1 = T1_old
- 
-        
+        print(G)
+    T0 = T1[:]
+    T1 = [T1[-1]] + [0] * dt.N
     #if step % 10 == 0:
         #plotter.redraw()
     #step += 1
