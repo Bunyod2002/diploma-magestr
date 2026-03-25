@@ -5,7 +5,7 @@ import saor
 
 def start_calc(G, T):
     T0 = [0] * (dt.N + 1)
-    dtime = 2500
+    dtime = 3000
     time = 0.05
     n = 0
     # Цикл естественной циркуляции
@@ -28,7 +28,7 @@ def start_calc(G, T):
             
     while time < dtime:
         # Активная зона
-        Q_veg = 0.065 * dt.Q * (60 ** (-0.2) - (60 + 2592000) ** (-0.2))
+        Q_veg = 0.065 * dt.Q * (120 ** (-0.2) - (120 + 2592000) ** (-0.2))
         i = 1
         dx = dt.h_az / dt.n_az
         dt_dx = dt.dt / dx

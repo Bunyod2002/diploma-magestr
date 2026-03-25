@@ -5,13 +5,13 @@ import functions as fc
 import saor
 import start
 import hydraulic as hc
+from gui import create_default_temp_plot
 
-#from gui import create_default_temp_plot
-#plotter = create_default_temp_plot()
+plotter = create_default_temp_plot()
 T0 = start.start_calc(dt.Gpb, 773.15)
 h = 2.25
-dtime = 100
-time = 60
+dtime = 86400
+time = 120
 n = 0
 # Цикл естественной циркуляции
 # 1.Активная зона  2.Область до тягового участка  3. Тяговый участок до отметки естественной циркуляции
@@ -30,16 +30,18 @@ def part(n, f, h, G):
         fc.kurrent(f, t_k_1, G, dx, dt.dt)
         i += 1
 step = 0  
-G = dt.Gpb      
+G = dt.Gpb
+t_draw = [0, 0, 0, 0]      
 while time < dtime:
     # Активная зона
     T0_old = T0.copy()
     T1_old = T1.copy()
-    Q_veg =  0.065 * dt.Q * (time ** (-0.2) - (time + 2592000) ** (-0.2))
+    Q_veg =  fc.residual_power(time)
     i = 1
     dx = dt.h_az / dt.n_az
     dt_dx = dt.dt / dx
     z = 0
+    t_draw[0] = T1[i-1]
     #plotter.push_point("AZ_in", time, T1[i-1])
     for j in range(dt.n_az):
         t_i = T0[i]  # T_i-1_k
@@ -51,6 +53,7 @@ while time < dtime:
         h += dx
         i += 1
         z += dx
+    t_draw[1] = T1[i-1]
     #plotter.push_point("AZ_out", time, T1[i-1])
     # Область до тягового участка
     part(dt.n_1, dt.f_1, dt.h_1, G)
@@ -60,28 +63,36 @@ while time < dtime:
     part(dt.n_3, dt.f_3, dt.l_3, G)
     # CАОР
     t_saor = saor.saor_calc(T1[i-1], G/12)
+    t_draw[2] = T1[i-1]
     #plotter.push_point("PG_in", time, T1[i-1])
     for j in range(len(t_saor)):
         T1[i] = t_saor[j]
         i += 1
+    t_draw[3] = T1[i-1]
     #plotter.push_point("PG_out", time, T1[i-1])
     # Опускной участок
     part(dt.n_4, dt.f_4, dt.h_4, G)
     # Горизонтальный участок до АЗ
     part(dt.n_5, dt.f_5, dt.l_5, G)
-    p = hc.p_full(G, T1)
+    p = hc.pressure_balance(G, T1)
     if abs(p[0] - p[1]) < 5:
         time += dt.dt
         T0 = T1[:]
         T1 = [T1[-1]] + [0] * dt.N
+        plotter.push_point("AZ_in", time, t_draw[0])
+        plotter.push_point("AZ_out", time, t_draw[1])
+        plotter.push_point("PG_in", time, t_draw[2])
+        plotter.push_point("PG_out", time, t_draw[3])
+        print(G, time)
     else:
         G = G * (p[1] / p[0])
         T0 = T0_old
         T1 = T1_old
-        print(G)
-    #if step % 10 == 0:
-        #plotter.redraw()
-    #step += 1
+
+    if step % 10 == 0:
+        plotter.redraw()
+    step += 1
+plotter.hold()
 
 
 

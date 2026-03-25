@@ -12,76 +12,93 @@ def friction_koef(re):
         return 64.0 / re
     return (1.82 * log10(re) - 1.64) ** (-2)
 
-def dp_friction(G, T1, x, f, d = None):
+def dp_friction(G, T, x, f, d = None):
+    """Определяет потери на трение на определеноом участке
+    В качестве входных данных нужен расход, температура
+    длина участка, площадь участка и гидравлический диаметр"""
     if not d:
         d = (4 * f / pi) ** 0.5
-    r = fc.ro(T1 - 273.15)
-    w = fc.vel(f, T1, G)
-    v = (43.8 - 7.57 * 0.01 * (T1 - 273.15) + 0.467 * 0.0001 * (T1 - 273.15)**2) * 10 **(-8)  # кинематическая вязкость свинца
+    r = fc.ro(T - 273.15)
+    w = fc.vel(f, T, G)
+    v = (43.8 - 7.57 * 0.01 * (T - 273.15) + 0.467 * 0.0001 * (T - 273.15)**2) * 10 **(-8)  # кинематическая вязкость свинца
     Re = w * d / v # Число Рейнольдса
     e_fric = friction_koef(Re)
     dp_fric = e_fric * (x / d) * r * w * w * 0.5
     return dp_fric
 
-def dp_polez(T, x, direction=None):
+def dp_gravity(T, x, direction=None):
+    """Возвращает гравитационный напор, со знаком + если движение вверх
+    со знаком - если движение вниз"""
     r = fc.ro(T - 273.15)
     if direction == 'up':
         dp = r * g * x
     elif direction == 'down':
-        dp = -r * g * x
+        dp = r * g * x
     else:
         dp = 0
     return dp
 
 def dp_friction_saor(G, T1):
+    """Отдельная функция, которая считает сопротивление на трении
+    для участка САОР"""
     x = dt.h_saor / dt.n_saor
     d_g = sdt.d5 - sdt.d4
-    f = pi * (sdt.d5 ** 2 - sdt.d4 ** 2) / 4
-    r = fc.ro(T1 - 273.15)
-    w = fc.vel(f, T1, G)
-    v = (43.8 - 7.57 * 0.01 * (T1 - 273.15) + 0.467 * 0.0001 * (T1 - 273.15)**2) * 10 **(-8)  # кинематическая вязкость
-    Re = w * d_g / v
-    if Re < 2300 and Re > 0:
-        e_fric = 64 / Re
-    elif Re > 0:
-        e_fric = (1.82*log10(Re) - 1.64)**(-2) # коэффициент потери на трение
-    else:
-        e_fric = 0
-    dp_fric = e_fric*x*r*w*w*0.5/d_g
-    return dp_fric
+    area = pi * (sdt.d5 ** 2 - sdt.d4 ** 2) / 4
+    return dp_friction(G, T1, x, area, d_g)
 
 
-def p_full(G, T):
+def pressure_balance(G: float, T: list[float]):
+    """Возвращает (потери, движущий напор, невязка)."""
     i = 0
-    p1 = 0
-    p2 = 0
-    for j in range(dt.n_az):
-        p1 += dp_friction(G, T[i], dt.h_az / dt.n_az, dt.f_az, dt.dg_az)
-        p1 += dp_polez(T[i], dt.h_az / dt.n_az, 'up')
+    losses = 0.0
+    driving = 0
+
+    # Подъемная ветвь
+    dx = dt.h_az / dt.n_az
+    for _ in range(dt.n_az):
+        losses += dp_friction(G, T[i], dx, dt.f_az, dt.dg_az)
+        losses += dp_gravity(T[i], dx, 'up')
         i += 1
-    for j in range(dt.n_1):
-        p1 += dp_friction(G, T[i], dt.h_1 / dt.n_1, dt.f_1)
-        p1 += dp_polez(T[i], dt.h_1 / dt.n_1, 'up')
+
+    dx = dt.h_1 / dt.n_1
+    for _ in range(dt.n_1):
+        losses += dp_friction(G, T[i], dx, dt.f_1)
+        losses += dp_gravity(T[i], dx, 'up')
         i += 1
-    for j in range(dt.n_2):
-        p1 += dp_friction(G, T[i], dt.h_2 / dt.n_2, dt.f_2)
-        p1 += dp_polez(T[i], dt.h_2 / dt.n_2, 'up')
+
+    dx = dt.h_2 / dt.n_2
+    for _ in range(dt.n_2):
+        losses += dp_friction(G, T[i], dx, dt.f_2)
+        losses += dp_gravity(T[i], dx, 'up')
         i += 1
-    for j in range(dt.n_3):
-        p1 += dp_friction(G, T[i], dt.l_3 / dt.n_3, dt.f_3, dt.dg_az)
+
+    # Горизонталь до САОР
+    dx = dt.l_3 / dt.n_3
+    for _ in range(dt.n_3):
+        losses += dp_friction(G, T[i], dx, dt.f_3, dt.dg_az)
         i += 1
-        # Здесь должен быть участок САОР
-    for j in range(dt.n_saor):
-        p1 += dp_friction_saor(G / 12, T[i])
-        p2 += dp_polez(T[i], dt.h_saor / dt.n_saor, 'down')
+
+    # САОР — нисходящая ветвь
+    dx = dt.h_saor / dt.n_saor
+    for _ in range(dt.n_saor):
+        losses += dp_friction_saor(G / 12, T[i])
+        driving += dp_gravity(T[i], dx, 'down')
         i += 1
-    for j in range(dt.n_4):
-        p1 += dp_friction(G, T[i], dt.h_4 / dt.n_4, dt.f_4)
-        p2 += dp_polez(T[i], dt.h_4 / dt.n_4, 'down')
+
+    # Опускной участок
+    dx = dt.h_4 / dt.n_4
+    for _ in range(dt.n_4):
+        losses += dp_friction(G, T[i], dx, dt.f_4)
+        driving += dp_gravity(T[i], dx, 'down')
         i += 1
-    for j in range(dt.n_5):
-        p1 += dp_friction(G, T[i], dt.l_5 / dt.n_5, dt.f_5)
+
+    # Горизонталь до АЗ
+    dx = dt.l_5 / dt.n_5
+    for _ in range(dt.n_5):
+        losses += dp_friction(G, T[i], dx, dt.f_5)
         i += 1
-    return (p1, p2)
+
+    return losses, driving
+
     
     
