@@ -54,7 +54,6 @@ while time < dtime:
         i += 1
         z += dx
     t_draw[1] = T1[i-1]
-    #plotter.push_point("AZ_out", time, T1[i-1])
     # Область до тягового участка
     part(dt.n_1, dt.f_1, dt.h_1, G)
     # Тяговый участок
@@ -69,7 +68,6 @@ while time < dtime:
         T1[i] = t_saor[j]
         i += 1
     t_draw[3] = T1[i-1]
-    #plotter.push_point("PG_out", time, T1[i-1])
     # Опускной участок
     part(dt.n_4, dt.f_4, dt.h_4, G)
     # Горизонтальный участок до АЗ
