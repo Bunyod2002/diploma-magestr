@@ -8,6 +8,7 @@ import hydraulic as hc
 from gui import create_default_temp_plot
 
 plotter = create_default_temp_plot()
+plotter2 = create_default_temp_plot()
 T0 = start.start_calc(dt.Gpb, 773.15)
 h = 2.25
 dtime = 86400
@@ -81,6 +82,7 @@ while time < dtime:
         plotter.push_point("AZ_out", time, t_draw[1])
         plotter.push_point("PG_in", time, t_draw[2])
         plotter.push_point("PG_out", time, t_draw[3])
+        plotter2.push_point("Flow_rate", time, G + 273.15)
         print(G, time)
     else:
         G = G * (p[1] / p[0])
@@ -89,8 +91,10 @@ while time < dtime:
 
     if step % 10 == 0:
         plotter.redraw()
+        plotter2.redraw()
     step += 1
 plotter.hold()
+plotter2.hold()
 
 
 

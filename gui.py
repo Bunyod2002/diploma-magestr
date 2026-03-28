@@ -67,5 +67,6 @@ def create_default_temp_plot():
     p.add_series("AZ_out", label="АЗ (выход)")
     p.add_series("PG_in", label="ПГ (вход)")
     p.add_series("PG_out", label="ПГ выход")
+    p.add_series("Flow_rate", label="Расход")
     return p
 
