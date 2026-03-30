@@ -22,7 +22,7 @@ def part(n, f, h, G):
     global i, T1
     dx = h / n
     dt_dx = dt.dt / dx
-    for j in range(n):
+    for j in range(n): 
         t_i = T0[i]  # T_i-1_k
         t_i_1 = T0[i-1]  # T_i_k
         r = fc.ro(t_i_1 - 273.15)
