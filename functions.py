@@ -37,3 +37,4 @@ def residual_power(time): # остаточное тепловыделение в
     return 0.065 * dt.Q * (time ** (-0.2) - (time + 2592000.0) ** (-0.2))
 
 
+
