@@ -5,15 +5,15 @@ import saor
 
 def start_calc(G, T):
     T0 = [0] * (dt.N + 1)
-    dtime = 3000
-    time = 0.05
+    dtime = 600
+    time = 0
     n = 0
     # Цикл естественной циркуляции
     # 1.Активная зона  2.Область до тягового участка  3. Тяговый участок до отметки естественной циркуляции
     # 4. Горизонтальный участок до САОР  5.Теплообменник Фильда  6. Опускной участок 7. Горизонтальный участок до АЗ 
     T1 = [T] + [0] * dt.N
     h = 2.25
-    def part_x(n, f, h, G, i, ):
+    def part_x(n, f, h, G, i):
         dx = h / n
         dt_dx = dt.dt / dx
         for j in range(n):
@@ -28,7 +28,7 @@ def start_calc(G, T):
             
     while time < dtime:
         # Активная зона
-        Q_veg = 0.065 * dt.Q * (120 ** (-0.2) - (120 + 2592000) ** (-0.2))
+        Q_veg = dt.Q 
         i = 1
         dx = dt.h_az / dt.n_az
         dt_dx = dt.dt / dx
@@ -47,17 +47,33 @@ def start_calc(G, T):
         i = part_x(dt.n_1, dt.f_1, dt.h_1, G, i)
         # Тяговый участок
         i = part_x(dt.n_2, dt.f_2, dt.h_2, G, i)
-        # Горизонтальный участок до САОР
+        # Горизрнтальный участок до ПГ
         i = part_x(dt.n_3, dt.f_3, dt.l_3, G, i)
+        # Парогенератор
+        dx = dt.h_pg / dt.n_pg
+        dt_dx = dt.dt / dx
+        for j in range(dt.n_pg):
+            t_i = T0[i]  # T_i-1_k
+            t_i_1 = T1[i - 1]  # T_i_k
+            r = fc.ro(t_i_1 - 273.15)
+            alfa = fc.alphaPb(r, dt.f_pg, dt.dg_pg, G)
+            t_k_1 = round(t_i + dt_dx * (G * dt.cp_Pb * (t_i_1 - t_i) + alfa * dt.s_pg * (dt.T_pg - t_i)) / (r * dt.f_pg * dt.cp_Pb), 3)
+            T1[i] = t_k_1
+            h -= dx
+            i += 1
+        # Подъемный участок через насос
+        i = part_x(dt.n_4, dt.f_4, dt.h_4, G, i)
+        # Горизонтальный участок до САОР
+        i = part_x(dt.n_5, dt.f_5, dt.l_5, G, i)
         # CАОР
         t_saor = saor.saor_calc(T1[i-1], G/12)
         for j in range(len(t_saor)):
             T1[i] = t_saor[j]
             i += 1
         # Опускной участок
-        i = part_x(dt.n_4, dt.f_4, dt.h_4, G, i)
+        i = part_x(dt.n_6, dt.f_6, dt.h_6, G, i)
         # Горизонтальный участок до АЗ
-        i = part_x(dt.n_5, dt.f_5, dt.l_5, G, i)
+        i = part_x(dt.n_7, dt.f_7, dt.l_7, G, i)
     
         
         time += dt.dt
@@ -66,5 +82,5 @@ def start_calc(G, T):
 
     return T0
 
-        
-
+a = start_calc(23761, 350+273.15)        
+print(a)
