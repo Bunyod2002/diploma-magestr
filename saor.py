@@ -53,4 +53,3 @@ def saor_calc(t_pb, G):
             continue
         break
     return lst_t3
-

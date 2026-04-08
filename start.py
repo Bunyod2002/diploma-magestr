@@ -5,7 +5,7 @@ import saor
 
 def start_calc(G, T):
     T0 = [0] * (dt.N + 1)
-    dtime = 600
+    dtime = 200
     time = 0
     n = 0
     # Цикл естественной циркуляции
@@ -66,11 +66,10 @@ def start_calc(G, T):
         # Горизонтальный участок до САОР
         i = part_x(dt.n_5, dt.f_5, dt.l_5, G, i)
         # CАОР
-        i = part_x(dt.n_saor, dt.d_test, dt.h_saor, G, i)
-        '''t_saor = saor.saor_calc(T1[i-1], G/12)
+        t_saor = saor.saor_calc(T1[i-1], G/12)
         for j in range(len(t_saor)):
             T1[i] = t_saor[j]
-            i += 1'''
+            i += 1
         # Опускной участок
         i = part_x(dt.n_6, dt.f_6, dt.h_6, G, i)
         # Горизонтальный участок до АЗ
@@ -83,4 +82,3 @@ def start_calc(G, T):
 
     return T0
 
-a = start_calc(23761, 350+273.15)        
