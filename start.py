@@ -5,7 +5,7 @@ import saor
 
 def start_calc(G, T):
     T0 = [0] * (dt.N + 1)
-    dtime = 400
+    dtime = 300
     time = 0
     n = 0
     # Цикл естественной циркуляции
