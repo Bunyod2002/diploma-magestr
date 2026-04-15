@@ -5,7 +5,7 @@ import saor
 
 def start_calc(G, T):
     T0 = [0] * (dt.N + 1)
-    dtime = 200
+    dtime = 400
     time = 0
     n = 0
     # Цикл естественной циркуляции
@@ -47,8 +47,8 @@ def start_calc(G, T):
         i = part_x(dt.n_1, dt.f_1, dt.h_1, G, i)
         # Тяговый участок
         i = part_x(dt.n_2, dt.f_2, dt.h_2, G, i)
-        # Горизрнтальный участок до ПГ
-        i = part_x(dt.n_3, dt.f_3, dt.l_3, G, i)
+        # Горизонтальный участок до ПГ
+        i = part_x(dt.n_3, dt.f_3, dt.l_3, G / 4, i)
         # Парогенератор
         dx = dt.h_pg / dt.n_pg
         dt_dx = dt.dt / dx
@@ -62,23 +62,22 @@ def start_calc(G, T):
             h -= dx
             i += 1
         # Подъемный участок через насос
-        i = part_x(dt.n_4, dt.f_4, dt.h_4, G, i)
+        i = part_x(dt.n_4, dt.f_4, dt.h_4, G / 4, i)
         # Горизонтальный участок до САОР
-        i = part_x(dt.n_5, dt.f_5, dt.l_5, G, i)
+        i = part_x(dt.n_5, dt.f_5, dt.l_5, G / 4, i)
         # CАОР
         t_saor = saor.saor_calc(T1[i-1], G/12)
         for j in range(len(t_saor)):
             T1[i] = t_saor[j]
             i += 1
         # Опускной участок
-        i = part_x(dt.n_6, dt.f_6, dt.h_6, G, i)
+        i = part_x(dt.n_6, dt.f_6, dt.h_6, G / 12, i)
         # Горизонтальный участок до АЗ
-        i = part_x(dt.n_7, dt.f_7, dt.l_7, G, i)
+        i = part_x(dt.n_7, dt.f_7, dt.l_7, G / 4, i)
     
         
         time += dt.dt
         T0 = T1[:]
         T1 = [T] + [0] * dt.N
-
     return T0
 
