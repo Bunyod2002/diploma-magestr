@@ -11,24 +11,25 @@ plotter = create_default_temp_plot()
 plotter2 = create_default_temp_plot()
 T0 = start.start_calc(dt.Gpb, 773.15)
 h = 2.25
-dtime = 86400
+dtime = 86400 * 3
 time = 120
 n = 0
 # Цикл естественной циркуляции
 # 1.Активная зона  2.Область до тягового участка  3. Тяговый участок до отметки естественной циркуляции
 # 4. Горизонтальный участок до САОР  5.Теплообменник Фильда  6. Опускной участок 7. Горизонтальный участок до АЗ 
+dtt = dt.dt
 T1 = [T0[-1]] + [0] * dt.N
-def part(n, f, h, G):
+def part(n, f, h, G, dtt):
     global i, T1
     dx = h / n
-    dt_dx = dt.dt / dx
+    dt_dx = dtt / dx
     for j in range(n): 
         t_i = T0[i]  # T_i-1_k
         t_i_1 = T0[i-1]  # T_i_k
         r = fc.ro(t_i_1 - 273.15)
         t_k_1 = round(t_i + dt_dx * (G* dt.cp_Pb*(t_i_1 - t_i)) / (dt.cp_Pb * r * f), 3)
         T1[i] = t_k_1
-        fc.kurrent(f, t_k_1, G, dx, dt.dt)
+        fc.kurrent(f, t_k_1, G, dx, dtt)
         i += 1
 step = 0  
 G = dt.Gpb
@@ -40,7 +41,7 @@ while time < dtime:
     Q_veg =  fc.residual_power(time)
     i = 1
     dx = dt.h_az / dt.n_az
-    dt_dx = dt.dt / dx
+    dt_dx = dtt / dx
     z = 0
     t_draw[0] = T1[i-1]
     #plotter.push_point("AZ_in", time, T1[i-1])
@@ -50,17 +51,17 @@ while time < dtime:
         r = fc.ro(t_i_1 - 273.15)
         t_k_1 = round(t_i + dt_dx * (G* dt.cp_Pb*(t_i_1 - t_i) + fc.ql(Q_veg, z) * dx) / (dt.cp_Pb * r * dt.f_az), 3)
         T1[i] = t_k_1
-        fc.kurrent(dt.f_az, t_k_1, G, dx, dt.dt)
+        fc.kurrent(dt.f_az, t_k_1, G, dx, dtt)
         h += dx
         i += 1
         z += dx
     t_draw[1] = T1[i-1]
     # Область до тягового участка
-    part(dt.n_1, dt.f_1, dt.h_1, G)
+    part(dt.n_1, dt.f_1, dt.h_1, G, dtt)
     # Тяговый участок
-    part(dt.n_2, dt.f_2, dt.h_2, G)
+    part(dt.n_2, dt.f_2, dt.h_2, G, dtt)
     # Горизонтальный участок до САОР
-    part(dt.n_3, dt.f_3, dt.l_3, G)
+    part(dt.n_3, dt.f_3, dt.l_3, G, dtt)
     # CАОР
     t_saor = saor.saor_calc(T1[i-1], G/12)
     t_draw[2] = T1[i-1]
@@ -70,12 +71,13 @@ while time < dtime:
         i += 1
     t_draw[3] = T1[i-1]
     # Опускной участок
-    part(dt.n_4, dt.f_4, dt.h_4, G)
+    part(dt.n_4, dt.f_4, dt.h_4, G, dtt)
     # Горизонтальный участок до АЗ
-    part(dt.n_5, dt.f_5, dt.l_5, G)
+    part(dt.n_5, dt.f_5, dt.l_5, G, dtt)
     p = hc.pressure_balance(G, T1)
     if abs(p[0] - p[1]) < 5:
-        time += dt.dt
+        time += dtt
+        dtt = fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az)
         T0 = T1[:]
         T1 = [T1[-1]] + [0] * dt.N
         plotter.push_point("AZ_in", time, t_draw[0])
@@ -83,16 +85,17 @@ while time < dtime:
         plotter.push_point("PG_in", time, t_draw[2])
         plotter.push_point("PG_out", time, t_draw[3])
         plotter2.push_point("Flow_rate", time, G + 273.15)
-        print(G, time)
+        step += 1
+        if step % 1000 == 0:
+            plotter.redraw()
+            plotter2.redraw()
+        print(G, time, dtt)
     else:
         G = G * (p[1] / p[0])
+        dtt = fc.new_dt(dt.f_az, T0_old[30], G, dt.h_az / dt.n_az)
         T0 = T0_old
         T1 = T1_old
 
-    if step % 10 == 0:
-        plotter.redraw()
-        plotter2.redraw()
-    step += 1
 plotter.hold()
 plotter2.hold()
 

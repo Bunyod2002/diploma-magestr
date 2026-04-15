@@ -36,5 +36,9 @@ def vel(f, T, G): #скорость свинца, м^2, K, кг/c
 def residual_power(time): # остаточное тепловыделение в зависимости от времени
     return 0.065 * dt.Q * (time ** (-0.2) - (time + 2592000.0) ** (-0.2))
 
+def new_dt(f, T, G, dx): # новый шаг по времени
+    v = vel(f, T, G)
+    return 0.9 * dx / v 
+
 
 
