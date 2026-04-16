@@ -3,6 +3,7 @@ from Data import g
 import Data as dt
 import saor_data as sdt
 from math import log10, pi
+import start
 
 
 # Гидравлические сопротивления активной зоны
@@ -123,7 +124,7 @@ def pressure_balance(G: float, T: list[float]):
     p += dp_az_pg_in_and_out(G, T[i], 0.5)
     for j in range(dt.n_az):
         p += dp_friction_az(G, T[i])
-        p_gravity += dp_gravity(T[i], dx)
+        p_gravity -= dp_gravity(T[i], dx)
         if j % 5 == 0:
             p += dp_az_spacer(G, T[i])
         i += 1
@@ -132,7 +133,7 @@ def pressure_balance(G: float, T: list[float]):
     dx = dt.h_1 / dt.n_1
     for _ in range(dt.n_1):
         p += dp_friction(G, T[i], dx, dt.f_1)
-        p_gravity += dp_gravity(T[i], dx)
+        p_gravity -= dp_gravity(T[i], dx)
         i += 1
         
     p += dp_expansion(G, T[i], dt.f_1, dt.f_2)
@@ -140,7 +141,7 @@ def pressure_balance(G: float, T: list[float]):
     dx = dt.h_2 / dt.n_2
     for _ in range(dt.n_2):
         p += dp_friction(G, T[i], dx, dt.f_2)
-        p_gravity += dp_gravity(T[i], dx)
+        p_gravity -= dp_gravity(T[i], dx)
         i += 1
         
     p += dp_bend_90(G / 4, T[i], dt.f_2)
@@ -150,20 +151,20 @@ def pressure_balance(G: float, T: list[float]):
         p += dp_friction(G / 4, T[i], dx, dt.f_3)
         i += 1
     p += dp_bend_90(G / 4, T[i], dt.f_3)
-    p += dp_az_pg_in_and_out(G, T[i], 0.5)
+    p += dp_az_pg_in_and_out(G / 4, T[i], 0.5)
     dx = dt.h_pg / dt.n_pg
     for _ in range(dt.n_pg):
-        p += dp_bundle_pg(G, T[i], dx)
-        p_gravity -= dp_gravity(T[i], dx)
+        p += dp_bundle_pg(G / 4, T[i], dx)
+        p_gravity += dp_gravity(T[i], dx)
         i += 1  
-    p += dp_az_pg_in_and_out(G, T[i], 0.5)
+    p += dp_az_pg_in_and_out(G / 4, T[i], 0.5)
 
     p += dp_bend_90(G / 4, T[i], dt.f_4)
 
     dx = dt.h_4 / dt.n_4
     for _ in range(dt.n_4):
         p += dp_friction(G / 4, T[i], dx, dt.f_4)
-        p_gravity += dp_gravity(T[i], dx)
+        p_gravity -= dp_gravity(T[i], dx)
         i += 1 
     dx = dt.l_5 / dt.n_5
 
@@ -178,13 +179,13 @@ def pressure_balance(G: float, T: list[float]):
     dx = dt.h_saor / dt.n_saor
     for _ in range(dt.n_saor):
         p += dp_friction_saor(G / 12, T[i])
-        p_gravity -= dp_gravity(T[i], dx)
+        p_gravity += dp_gravity(T[i], dx)
         i += 1
     p += dp_expansion(G / 12, T[i], pi * (sdt.d5 ** 2 - sdt.d4 ** 2) / 4, dt.f_6)
     # Опускной участок
     dx = dt.h_6 / dt.n_6
     for _ in range(dt.n_6):
-        p_gravity -= dp_gravity(T[i], dx)
+        p_gravity += dp_gravity(T[i], dx)
         p += dp_friction(G / 4, T[i], dx, dt.f_6)
         i += 1
     p += dp_bend_90(G / 12, T[i], dt.f_6)
@@ -196,6 +197,7 @@ def pressure_balance(G: float, T: list[float]):
     p += dp_bend_90(G / 4, T[i], dt.f_7)
 
     return p, p_gravity
+
 
     
     

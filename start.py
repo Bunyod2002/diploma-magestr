@@ -3,9 +3,9 @@ from math import exp
 import functions as fc
 import saor
 
-def start_calc(G, T):
+def start_calc(G, T, pg = True):
     T0 = [0] * (dt.N + 1)
-    dtime = 300
+    dtime = 400
     time = 0
     n = 0
     # Цикл естественной циркуляции
@@ -52,16 +52,19 @@ def start_calc(G, T):
         # Парогенератор
         dx = dt.h_pg / dt.n_pg
         dt_dx = dt.dt / dx
-        for j in range(dt.n_pg):
-            t_i = T0[i]  # T_i-1_k
-            t_i_1 = T1[i - 1]  # T_i_k
-            r = fc.ro(t_i_1 - 273.15)
-            alfa = fc.alphaPb(r, dt.f_pg, dt.dg_pg, G)
-            t_k_1 = round(t_i + dt_dx * (G * dt.cp_Pb * (t_i_1 - t_i) + alfa * dt.s_pg * (dt.T_pg - t_i)) / (r * dt.f_pg * dt.cp_Pb), 3)
-            T1[i] = t_k_1
-            h -= dx
-            i += 1
-        # Подъемный участок через насос
+        if not pg:
+            i = part_x(dt.n_pg, dt.f_pg, dt.h_pg, G / 4, i)
+        else:
+            for j in range(dt.n_pg):
+                t_i = T0[i]  # T_i-1_k
+                t_i_1 = T1[i - 1]  # T_i_k
+                r = fc.ro(t_i_1 - 273.15)
+                alfa = fc.alphaPb(r, dt.f_pg, dt.dg_pg, G / 4)
+                t_k_1 = round(t_i + dt_dx * (G / 4 * dt.cp_Pb * (t_i_1 - t_i) + alfa * dt.s_pg * (dt.T_pg - t_i)) / (r * dt.f_pg * dt.cp_Pb), 3)
+                T1[i] = t_k_1
+                h -= dx
+                i += 1
+            # Подъемный участок через насос
         i = part_x(dt.n_4, dt.f_4, dt.h_4, G / 4, i)
         # Горизонтальный участок до САОР
         i = part_x(dt.n_5, dt.f_5, dt.l_5, G / 4, i)

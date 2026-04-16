@@ -7,11 +7,12 @@ import start
 import hydraulic as hc
 from gui import create_default_temp_plot
 
-T0 = start.start_calc(dt.Gpb, 350 + 273.15)
+T0 = start.start_calc(dt.Gpb, 350 + 273.15, False)
 plotter = plotter = create_default_temp_plot()
 plotter2 = create_default_temp_plot()
 p = hc.pressure_balance(dt.Gpb, T0)
-p_nasos = p[0] + p[1]
+p_0 = p[0] + p[1]
+p_nasos = p_0
 t_draw = [0, 0, 0, 0]
  
 h = 2.25
@@ -42,10 +43,9 @@ while time < dtime:
     # Активная зона
     T0_old = T0.copy()
     T1_old = T1.copy()
-    if time > 90:
-        p_nasos = p_nasos * exp(-(time-90) / 60)
-    if time > 100:
-        Q_veg = fc.residual_power(time - 100)
+    p_nasos = p_0 * exp(-time / 60)
+    if time > 10:
+        Q_veg = fc.residual_power(time - 10)
     i = 1
     dx = dt.h_az / dt.n_az
     dt_dx = dtt / dx
@@ -71,9 +71,9 @@ while time < dtime:
     # Парогенератор
     dx = dt.h_pg / dt.n_pg
     dt_dx = dtt / dx
-    if time > 90:
-        part(dt.n_pg, dt.f_pg, dt.h_pg, G, dtt)
-    else:
+
+    part(dt.n_pg, dt.f_pg, dt.h_pg, G / 4, dtt)
+    '''else:
         for j in range(dt.n_pg):
             t_i = T0[i]  # T_i-1_k
             t_i_1 = T1[i - 1]  # T_i_k
@@ -82,7 +82,7 @@ while time < dtime:
             t_k_1 = round(t_i + dt_dx * (G * dt.cp_Pb * (t_i_1 - t_i) + alfa * dt.s_pg * (dt.T_pg - t_i)) / (r * dt.f_pg * dt.cp_Pb), 3)
             T1[i] = t_k_1
             h -= dx
-            i += 1
+            i += 1'''
     # Подъемный участок через насос
     part(dt.n_4, dt.f_4, dt.h_4, G / 4, dtt)
     # Горизонтальный участок до САОР
@@ -100,7 +100,7 @@ while time < dtime:
     part(dt.n_7, dt.f_7, dt.l_7, G / 4, dtt)
     
     p = hc.pressure_balance(G, T1)
-    if abs(p_nasos - p[1] - p[0]) < 10:
+    if abs(p_nasos + p[1] - p[0]) < 100:
         time += dtt
         T0 = T1[:]
         T1 = [T1[-1]] + [0] * dt.N
@@ -111,12 +111,12 @@ while time < dtime:
         plotter2.push_point("Flow_rate", time, G + 273.15)
         step += 1
     else:
-        G = G * (abs(p_nasos - p[1])) / p[0]
+        G = G * (p_nasos + p[1]) / p[0]
         '''if time > 5:
             dtt = fc.new_dt(dt.f_az, T0_old[30], G, dt.h_az / dt.n_az)'''
         T0 = T0_old
         T1 = T1_old
-        print(G)
+        print(p_nasos + p[1], p[0], G)
     if step % 10 == 0:
         plotter.redraw()
         plotter2.redraw()
