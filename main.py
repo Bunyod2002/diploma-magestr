@@ -9,9 +9,10 @@ from gui import create_default_temp_plot
 
 plotter = create_default_temp_plot()
 plotter2 = create_default_temp_plot()
+plotter3 = create_default_temp_plot()
 T0 = start.start_calc(dt.Gpb, 773.15)
 h = 2.25
-dtime = 86400 * 3
+dtime = 86400
 time = 120
 n = 0
 # Цикл естественной циркуляции
@@ -85,10 +86,13 @@ while time < dtime:
         plotter.push_point("PG_in", time, t_draw[2])
         plotter.push_point("PG_out", time, t_draw[3])
         plotter2.push_point("Flow_rate", time, G + 273.15)
+        plotter3.push_point('p_plus', time, p[1] + 273.15)
+        plotter3.push_point('p_minus', time, p[0] + 273.15)
         step += 1
         if step % 1000 == 0:
             plotter.redraw()
             plotter2.redraw()
+            plotter3.redraw()
         print(G, time, dtt)
     else:
         G = G * (p[1] / p[0])
@@ -98,6 +102,7 @@ while time < dtime:
 
 plotter.hold()
 plotter2.hold()
+plotter3.hold()
 
 
 

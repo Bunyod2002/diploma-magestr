@@ -68,5 +68,7 @@ def create_default_temp_plot():
     p.add_series("PG_in", label="ПГ (вход)")
     p.add_series("PG_out", label="ПГ выход")
     p.add_series("Flow_rate", label="Расход")
+    p.add_series("p_plus", label = 'Гравитация')
+    p.add_series("p_minus", label = 'Потери')
     return p
 
