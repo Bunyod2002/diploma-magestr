@@ -21,7 +21,7 @@ def kurrent(f, T, G, x, dt): # условие куррента
 
 def new_dt(f, T, G, x):
     v = vel(f, T, G)
-    return 0.5 * x / v
+    return 0.9 * x / v
 
 def ro(t: float):   # плотность свинца в зависимости от температуры в градусах
     return round(1000*(11.05 - 12.49 * t * 0.0001), 3)
