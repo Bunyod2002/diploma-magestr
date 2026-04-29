@@ -43,10 +43,10 @@ while time < dtime:
     # Активная зона
     T0_old = T0.copy()
     T1_old = T1.copy()
-    if time > 90:
-        p_nasos = p_0 * exp(-(time - 90) / 60)
+    #if time > 90:
+        #p_nasos = p_0 * exp(-(time - 90) / 60)
     if time > 100:
-        Q_veg = fc.residual_power(time - 100)
+        Q_veg = dt.Q
     i = 1
     dx = dt.h_az / dt.n_az
     dt_dx = dtt / dx
