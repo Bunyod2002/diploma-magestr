@@ -9,7 +9,6 @@ from gui import create_default_temp_plot
 
 plotter = create_default_temp_plot()
 plotter2 = create_default_temp_plot()
-plotter3 = create_default_temp_plot()
 T0 = start.start_calc(dt.Gpb, 773.15)
 h = 2.25
 dtime = 86400
@@ -39,7 +38,7 @@ while time < dtime:
     # Активная зона
     T0_old = T0.copy()
     T1_old = T1.copy()
-    Q_veg =  fc.residual_power(time)
+    Q_veg =  0.0001 * dt.Q
     i = 1
     dx = dt.h_az / dt.n_az
     dt_dx = dtt / dx
@@ -86,13 +85,10 @@ while time < dtime:
         plotter.push_point("PG_in", time, t_draw[2])
         plotter.push_point("PG_out", time, t_draw[3])
         plotter2.push_point("Flow_rate", time, G + 273.15)
-        plotter3.push_point('p_plus', time, p[1] + 273.15)
-        plotter3.push_point('p_minus', time, p[0] + 273.15)
-        step += 1
-        if step % 1000 == 0:
-            plotter.redraw()
-            plotter2.redraw()
-            plotter3.redraw()
+
+
+        plotter.redraw()
+        plotter2.redraw()
         print(G, time, dtt)
     else:
         G = G * (p[1] / p[0])
@@ -102,7 +98,6 @@ while time < dtime:
 
 plotter.hold()
 plotter2.hold()
-plotter3.hold()
 
 
 
