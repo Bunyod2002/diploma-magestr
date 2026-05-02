@@ -9,7 +9,7 @@ from gui import create_default_temp_plot
 T0 = start.start_calc(dt.Gpb, 350 + 273.15)
 
 p = hc.pressure_balance(dt.Gpb, T0)
-p_0 = p[0] - p[1]
+p_0 = p[0] - p[1] + 200000
 p_nasos = p_0
 din = fc.din_count()
 t_draw = [0, 0, 0, 0]
@@ -74,12 +74,12 @@ while time < dtime:
     dx = dt.h_pg / dt.n_pg
     dt_dx = dtt / dx
 
-    if time > 10:
+    if time > 20:
         part(dt.n_pg, dt.f_pg, dt.h_pg, G / 4, dtt)
     else:
         for j in range(dt.n_pg):
             t_i = T0[i]  # T_i-1_k
-            t_i_1 = T1[i - 1]  # T_i_k
+            t_i_1 = T0[i - 1]  # T_i_k
             r = fc.ro(t_i_1 - 273.15)
             alfa = fc.alphaPb(r, dt.f_pg, dt.dg_pg, G)
             t_k_1 = round(t_i + dt_dx * (G * dt.cp_Pb * (t_i_1 - t_i) + alfa * dt.s_pg * (dt.T_pg - t_i)) / (r * dt.f_pg * dt.cp_Pb), 3)
@@ -102,7 +102,7 @@ while time < dtime:
     # Горизонтальный участок до АЗ
     part(dt.n_7, dt.f_7, dt.l_7, G / 4, dtt)
     plotter2.push_point("Flow_rate", time, G + 273.15)
-    if step % 1000 == 0:
+    if step % 10 == 0:
         plotter.redraw()
         plotter2.redraw()
     p = hc.pressure_balance(G, T1)
