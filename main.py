@@ -38,7 +38,7 @@ while time < dtime:
     # Активная зона
     T0_old = T0.copy()
     T1_old = T1.copy()
-    Q_veg =  0.0001 * dt.Q
+    Q_veg =  fc.residual_power(time)
     i = 1
     dx = dt.h_az / dt.n_az
     dt_dx = dtt / dx
