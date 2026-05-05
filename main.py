@@ -17,7 +17,7 @@ plotter = create_default_temp_plot()
 plotter2 = create_default_temp_plot()
  
 h = 2.25
-dtime = 86400 * 2
+dtime = 30
 time = 0
 n = 0
 # Цикл естественной циркуляции
@@ -109,7 +109,7 @@ while time < dtime:
     time += dtt
     print(G, dtt, time)
     G += dtt * (p_nasos + p[1] - p[0]) / din
-    #dtt = fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az)
+    dtt = fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az)
     T0 = T1[:]
     T1 = [T1[-1]] + [0] * dt.N
     step += 1
