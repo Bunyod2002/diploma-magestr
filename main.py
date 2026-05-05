@@ -6,7 +6,7 @@ import saor
 import start
 import hydraulic as hc
 from gui import create_default_temp_plot
-T0 = start.start_calc(dt.Gpb, 350 + 273.15)
+T0 = start.start_calc(dt.Gpb, 450 + 273.15)
 
 p = hc.pressure_balance(dt.Gpb, T0)
 p_0 = p[0] - p[1] + 200000
