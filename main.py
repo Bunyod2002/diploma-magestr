@@ -6,10 +6,10 @@ import saor
 import start
 import hydraulic as hc
 from gui import create_default_temp_plot
-T0 = start.start_calc(dt.Gpb, 450 + 273.15)
+T0 = start.start_calc(21000, 350 + 273.15)
 
 p = hc.pressure_balance(dt.Gpb, T0)
-p_0 = p[0] - p[1] + 200000
+p_0 = p[0] - p[1] 
 p_nasos = p_0
 din = fc.din_count()
 t_draw = [0, 0, 0, 0]
@@ -18,7 +18,7 @@ plotter2 = create_default_temp_plot()
  
 h = 2.25
 dtime = 86400 
-time = 0
+time = 20
 n = 0
 # Цикл естественной циркуляции
 # 1.Активная зона  2.Область до тягового участка  3. Тяговый участок до отметки естественной циркуляции
@@ -36,18 +36,16 @@ def part(n, f, h, G, dtt):
         T1[i] = t_k_1
         fc.kurrent(f, t_k_1, G, dx, dtt)
         i += 1          
-G = dt.Gpb
+G = 21000
 Q_veg = dt.Q  
 dtt = dt.dt 
 step = 0 
 while time < dtime:
     # Активная зона
     #T0_old = T0.copy()
-    #T1_old = T1.copy()
-    if time > 10:
-        p_nasos = p_0 * exp(-(time - 10) / 60)
-    if time > 20:
-        Q_veg = fc.residual_power(time - 20)
+    #T1_old = T1.copy():
+    p_nasos = p_0 * exp(-(time) / 60)
+    Q_veg = fc.residual_power(time - 10)
     i = 1
     dx = dt.h_az / dt.n_az
     dt_dx = dtt / dx
@@ -74,7 +72,7 @@ while time < dtime:
     dx = dt.h_pg / dt.n_pg
     dt_dx = dtt / dx
 
-    if time > 20:
+    if time >= 20:
         part(dt.n_pg, dt.f_pg, dt.h_pg, G / 4, dtt)
     else:
         for j in range(dt.n_pg):

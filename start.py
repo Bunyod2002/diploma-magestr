@@ -28,7 +28,7 @@ def start_calc(G, T, pg = True):
             
     while time < dtime:
         # Активная зона
-        Q_veg = fc.residual_power(10) 
+        Q_veg = dt.Q 
         i = 1
         dx = dt.h_az / dt.n_az
         dt_dx = dt.dt / dx
