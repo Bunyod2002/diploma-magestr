@@ -25,10 +25,9 @@ def start_calc(G, T, pg = True):
             fc.kurrent(f, t_k_1, G, dx, dt.dt)
             i += 1
         return i
-            
+    Q_veg = dt.Q
     while time < dtime:
         # Активная зона
-        Q_veg = dt.Q 
         i = 1
         dx = dt.h_az / dt.n_az
         dt_dx = dt.dt / dx
