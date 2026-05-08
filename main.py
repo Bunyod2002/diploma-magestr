@@ -8,6 +8,7 @@ import hydraulic as hc
 from gui import create_default_temp_plot
 T0 = start.start_calc(dt.Gpb, 350 + 273.15)
 
+
 p = hc.pressure_balance(dt.Gpb, T0)
 p_0 = p[0] - p[1] 
 p_nasos = p_0 * exp(-(20) / 60)
@@ -17,7 +18,7 @@ plotter = create_default_temp_plot()
 plotter2 = create_default_temp_plot()
  
 h = 2.25
-dtime = 30
+dtime = 30000
 time = 0
 n = 0
 # Цикл естественной циркуляции
@@ -37,8 +38,8 @@ def part(n, f, h, G, dtt):
         fc.kurrent(f, t_k_1, G, dx, dtt)
         i += 1          
 G = dt.Gpb
-Q_veg = dt.Q  
-dtt = dt.dt 
+Q_veg = dt.Q
+dtt = dt.dt
 step = 0 
 while time < dtime:
     # Активная зона
@@ -52,7 +53,7 @@ while time < dtime:
     dx = dt.h_az / dt.n_az
     dt_dx = dtt / dx
     z = 0
-    plotter.push_point("AZ_in", time / 3600, T1[i-1])
+    plotter.push_point("AZ_in", time, T1[i-1])
     for j in range(dt.n_az):
         t_i = T0[i]  # T_i-1_k
         t_i_1 = T0[i-1]  # T_i_k
@@ -63,7 +64,7 @@ while time < dtime:
         h += dx
         i += 1
         z += dx
-    plotter.push_point("AZ_out", time / 3600, T1[i-1])
+    plotter.push_point("AZ_out", time, T1[i-1])
     # Область до тягового участка
     part(dt.n_1, dt.f_1, dt.h_1, G, dtt)
     # Тяговый участок
@@ -91,18 +92,18 @@ while time < dtime:
     # Горизонтальный участок до САОР
     part(dt.n_5, dt.f_5, dt.l_5, G / 4, dtt)
     # CАОР
-    plotter.push_point("PG_in", time / 3600, T1[i-1])
+    plotter.push_point("PG_in", time, T1[i-1])
     t_saor = saor.saor_calc(T1[i-1], G/12)
     for j in range(len(t_saor)):
         T1[i] = t_saor[j]
         i += 1
-    plotter.push_point("PG_out", time / 3600, T1[i-1])
+    plotter.push_point("PG_out", time, T1[i-1])
     # Опускной участок
     part(dt.n_6, dt.f_6, dt.h_6, G / 12, dtt)
     # Горизонтальный участок до АЗ
     part(dt.n_7, dt.f_7, dt.l_7, G / 4, dtt)
-    plotter2.push_point("Flow_rate", time / 3600, G + 273.15)
-    if step % 100 == 0:
+    plotter2.push_point("Flow_rate", time, G + 273.15)
+    if step % 10 == 0:
         plotter.redraw()
         plotter2.redraw()
     p = hc.pressure_balance(G, T1)
