@@ -38,7 +38,7 @@ def vel(f, T, G): #скорость свинца, м^2, K, кг/c
     return G / (ro(T - 273.15) * f)
 
 def residual_power(time): # остаточное тепловыделение в зависимости от времени
-    return 0.5 * dt.Q * (time ** (-0.2) - (time + 2592000.0) ** (-0.2))
+    return 0.065 * dt.Q * (time ** (-0.2) - (time + 2592000.0) ** (-0.2))
 
 def din_count():
     din = dt.h_az / dt.f_az + dt.h_1 / dt.f_1 + dt.h_2 / dt.f_2 + dt.l_3 / dt.f_3 + dt.h_pg / dt.f_pg + dt.h_4 / dt.f_4 + dt.l_5 / dt.f_5 + dt.h_saor / dt.f_saor + dt.h_6 / dt.f_6 + dt.l_7 / dt.f_7

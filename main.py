@@ -110,7 +110,7 @@ while time < dtime:
     time += dtt
     print(G, dtt, time)
     G += dtt * (p_nasos + p[1] - p[0]) / din
-    dtt = fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az)
+    #dtt = fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az)
     T0 = T1[:]
     T1 = [T1[-1]] + [0] * dt.N
     step += 1
