@@ -12,7 +12,7 @@ def alphaPb(ro, f, d, G):  # альфа свинца в зависимости �
     PePb = vPb * d / dt.aPb  # число Пекле
     Nu = 5 + 0.025 * PePb ** 0.8  # число Нуссельта
     alfaPb = Nu * dt.lambdaPb / d
-    return round(alfaPb, 3)
+    return alfaPb
 
 def kurrent(f, T, G, x, dt): # условие куррента
     v = vel(f, T, G) # считаем скорость
@@ -26,13 +26,13 @@ def new_dt(f, T, G, x):
 def ro(t: float):   # плотность свинца в зависимости от температуры в градусах
     return round(1000*(11.05 - 12.49 * t * 0.0001), 3)
 
-def ql(Q, z):
+def qv(Q, z, f):
     kz = 1.5                  # максимум = 1.5·среднего
     ql_avg = Q / dt.h_az         # средняя линейная мощность
     a = kz - 1.0              # a=0.5
     x = (0.5*dt.h_az - z) / (0.5*dt.h_az)
     Z = 1.0 + a * cos(pi * x) # среднее(Z)=1 → ∫ ql = Q
-    return ql_avg * Z         # Вт/м
+    return ql_avg * Z / f        # Вт/м
 
 def vel(f, T, G): #скорость свинца, м^2, K, кг/c
     return G / (ro(T - 273.15) * f)
@@ -43,6 +43,4 @@ def residual_power(time): # остаточное тепловыделение в
 def din_count():
     din = dt.h_az / dt.f_az + dt.h_1 / dt.f_1 + dt.h_2 / dt.f_2 + dt.l_3 / dt.f_3 + dt.h_pg / dt.f_pg + dt.h_4 / dt.f_4 + dt.l_5 / dt.f_5 + dt.h_saor / dt.f_saor + dt.h_6 / dt.f_6 + dt.l_7 / dt.f_7
     return din
-
-
 

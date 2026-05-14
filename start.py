@@ -3,15 +3,15 @@ from math import exp
 import functions as fc
 import saor
 
-def start_calc(G, T, pg = True):
-    T0 = [0] * (dt.N + 1)
+def start_calc(G, pg = True):
+    T0 = [350 + 273.15] * (dt.N + 1)
     dtime = 400
     time = 0
     n = 0
     # Цикл естественной циркуляции
     # 1.Активная зона  2.Область до тягового участка  3. Тяговый участок до отметки естественной циркуляции
     # 4. Горизонтальный участок до САОР  5.Теплообменник Фильда  6. Опускной участок 7. Горизонтальный участок до АЗ 
-    T1 = [T] + [0] * dt.N
+    T1 = [T0[-1]] + [0] * dt.N
     h = 2.25
     def part_x(n, f, h, G, i):
         dx = h / n
@@ -81,6 +81,8 @@ def start_calc(G, T, pg = True):
         
         time += dt.dt
         T0 = T1[:]
-        T1 = [T] + [0] * dt.N
+        T1 = [T1[-1]] + [0] * dt.N
     return T0
 
+a = start_calc(23761)
+print(a)
