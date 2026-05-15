@@ -15,7 +15,7 @@ T0 = [350 + 273.15] * (dt.N + 1)
 plotter = create_default_temp_plot()
  
 h = 2.25
-dtime = 3
+dtime = 1000
 time = 0
 n = 0
 # Цикл естественной циркуляции
@@ -48,7 +48,8 @@ while time < dtime:
     for j in range(dt.n_az):
         tc = t_fuel[j]
         t_w = tc[-1]
-        plotter.push_point("Flow_rate", time, t_w)
+        if j == 5:
+            plotter.push_point("Flow_rate", time, t_w)
         t_i = T0[i]  # T_i-1_k
         t_i_1 = T0[i-1]  # T_i_k
         r = fc.ro(t_i_1 - 273.15)
@@ -61,7 +62,7 @@ while time < dtime:
         dr2 = (dt.r4 - dt.r3) / dt.n
         sr1 = dt.at * dtt / (dr1 ** 2)
         sr2 = dt.ac * dtt / (dr2 ** 2)
-        qv = fc.qv(Q_veg, z, dt.f_az) / 200
+        qv = fc.qv(Q_veg, z, dt.f_az) 
         for k in range(9):
             if k == 0:
                 ri14 = dt.r1 + dr1 / 4
@@ -85,7 +86,7 @@ while time < dtime:
                 ri = dt.r2 
                 ri14 = ri - dr1 / 4
                 ri12 = ri - dr1 / 2
-                a = 1 / (1 + (dt.clt * ri14) / (dr1 * alfgap * ri * 2 * sr1)) + (dt.clt * ri12 * (1 - a_coef[k - 1])) / (dr1 * alfgap * ri)
+                a = 1 / (1 + (dt.clt * ri14) / (dr1 * alfgap * ri * 2 * sr1) + dt.clt * ri12 * (1 - a_coef[k - 1]) / (dr1 * alfgap * ri))
                 b = dt.clt * ri14 * tc[k] / (dr1 * alfgap * sr1 * 2 * ri) + qv * dr1 * ri14 / (alfgap * 2 * ri) + dt.clt * ri12 * a_coef[k-1] * b_coef[k-1] / (dr1 * alfgap * ri)
                 a_coef.append(a)
                 b_coef.append(b) 
@@ -101,7 +102,7 @@ while time < dtime:
                 ri = dt.r3 + dr2 * (k - 5)
                 ri1 = ri - dr2 / 2
                 ri2 = ri + dr2 / 2
-                a = 1 / (ri * (2 + 1 / sr2) / ri2) - ri1 * a_coef[k-1] / ri2
+                a = 1 / (ri * (2 + 1 / sr2) / ri2 - ri1 * a_coef[k-1] / ri2)
                 b = ri * tc[k] / (ri2 * sr2) + ri1 * a_coef[k-1] * b_coef[k-1] / ri2
                 a_coef.append(a)
                 b_coef.append(b)
@@ -113,7 +114,7 @@ while time < dtime:
                 ri12 = ri - dr2 / 2
                 tc[k] = (tc[k] + alfa * t_i * sr2 * dr2 * 2 * ri / (dt.clc * ri14) + 2 * sr2 * ri12 * a_coef[-1] * b_coef[-1] / ri14) / (1 + sr2 * 2 * ri12 * (1 - a_coef[-1]) / ri14 + alfa * sr2 * dr2 * ri / (dt.clc * ri14))
             else:
-                tc[k] = a_coef[k] * b_coef[k] + tc[k + 1]
+                tc[k] = a_coef[k] * (b_coef[k] + tc[k + 1])
         t_fuel[j] = tc   
         #fc.kurrent(dt.f_az, t_k_1, G, dx, dtt)
         h += dx
