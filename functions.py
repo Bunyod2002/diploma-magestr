@@ -26,13 +26,13 @@ def new_dt(f, T, G, x):
 def ro(t: float):   # плотность свинца в зависимости от температуры в градусах
     return round(1000*(11.05 - 12.49 * t * 0.0001), 3)
 
-def qv(Q, z, f):
+def ql(Q, z):
     kz = 1.5                  # максимум = 1.5·среднего
     ql_avg = Q / dt.h_az         # средняя линейная мощность
     a = kz - 1.0              # a=0.5
     x = (0.5*dt.h_az - z) / (0.5*dt.h_az)
     Z = 1.0 + a * cos(pi * x) # среднее(Z)=1 → ∫ ql = Q
-    return ql_avg * Z / f        # Вт/м
+    return ql_avg * Z        # Вт/м
 
 def vel(f, T, G): #скорость свинца, м^2, K, кг/c
     return G / (ro(T - 273.15) * f)

@@ -1,13 +1,14 @@
 import Data as dt
-from math import exp
+from math import pi
 import functions as fc
 import saor
 
 def start_calc(G, pg = True):
     T0 = [350 + 273.15] * (dt.N + 1)
-    dtime = 400
+    dtime = 200
+    dtt = dt.dt
     time = 0
-    n = 0
+    t_fuel = dt.t_fuel.copy()
     # Цикл естественной циркуляции
     # 1.Активная зона  2.Область до тягового участка  3. Тяговый участок до отметки естественной циркуляции
     # 4. Горизонтальный участок до САОР  5.Теплообменник Фильда  6. Опускной участок 7. Горизонтальный участок до АЗ 
@@ -31,15 +32,77 @@ def start_calc(G, pg = True):
         Q_veg = dt.Q 
         i = 1
         dx = dt.h_az / dt.n_az
-        dt_dx = dt.dt / dx
+        dt_dx = dtt / dx
         z = 0
         for j in range(dt.n_az):
+            tc = t_fuel[j]
+            t_w = tc[-1]
             t_i = T0[i]  # T_i-1_k
             t_i_1 = T0[i-1]  # T_i_k
             r = fc.ro(t_i_1 - 273.15)
-            t_k_1 = round(t_i + dt_dx * (G* dt.cp_Pb*(t_i_1 - t_i) + fc.ql(Q_veg, z) * dx) / (dt.cp_Pb * r * dt.f_az), 3)
+            alfa = fc.alphaPb(r, dt.f_az, dt.dg_az, G)
+            t_k_1 = round(t_i + dt_dx * (G * dt.cp_Pb*(t_i_1 - t_i) + alfa * dt.s_tvel * (t_w - t_i)) / (dt.cp_Pb * r * dt.f_az), 3)
             T1[i] = t_k_1
-            fc.kurrent(dt.f_az, t_k_1, G, dx, dt.dt)
+            a_coef = []
+            b_coef = []
+            dr1 = (dt.r2 - dt.r1) / (dt.m - 1)
+            dr2 = (dt.r4 - dt.r3) / (dt.n - 1)
+            sr1 = dt.at * dtt / (dr1 ** 2)
+            sr2 = dt.ac * dtt / (dr2 ** 2)
+            qv = fc.ql(Q_veg, z) / (pi * (dt.r2 ** 2 - dt.r1**2))
+            for k in range(9):
+                if k == 0:
+                    ri14 = dt.r1 + dr1 / 4
+                    ri12 = dt.r1 + dr1 / 2
+                    a = 1 / (1 + (ri14 / (2 * ri12 * sr1)))
+                    b = tc[k] * ri14 / (2 * ri12 * sr1) + qv * dr1 ** 2 * ri14 / (2* ri12 * dt.clt)
+                    a_coef.append(a)
+                    b_coef.append(b)
+                elif 0 < k < 4:
+                    ri = dt.r1 + dr1 * k
+                    ri1 = ri - dr1 / 2
+                    ri2 = ri + dr1 / 2
+                    a = 1 / (ri * (2 + 1 / sr1) / ri2 - ri1 * a_coef[k-1] / ri2)
+                    b = ri * tc[k] / (ri2 * sr1) + qv * dr1 ** 2 * ri / (ri2 * dt.clt) + ri1 * a_coef[k-1] * b_coef[k-1] / ri2
+                    a_coef.append(a)
+                    b_coef.append(b) 
+                elif k == 4:
+                    alfgap1 = dt.clg / dt.delta
+                    alfgap2 = dt.sigma * dt.eps1 * (tc[k] + tc[k+1]) * (tc[k] ** 2 + tc[k + 1] ** 2)
+                    alfgap = alfgap1 + alfgap2
+                    ri = dt.r2 
+                    ri14 = ri - dr1 / 4
+                    ri12 = ri - dr1 / 2
+                    a = 1 / (1 + dt.clt * ri14 / (dr1 * alfgap * sr1 * 2 * ri) + dt.clt * ri12 * (1- a_coef[k-1]) / (dr1 * alfgap * ri))
+                    b = dt.clt * ri14 * tc[k] / (dr1 * alfgap * sr1 * 2 * ri) + qv * dr1 * ri14 / (alfgap * 2 * ri) + dt.clt * ri12 * a_coef[k-1] * b_coef[k-1] / (dr1 * alfgap * ri)
+                    a_coef.append(a)
+                    b_coef.append(b) 
+                elif k == 5:
+                    ri = dt.r3
+                    ri14 = ri + dr2 / 4
+                    ri12 = ri + dr2 / 2
+                    a = 1 / (1 + (ri14 / (2 * sr2 * ri12)) + alfgap * dr2 * ri * (1 - a_coef[k-1]) / (dt.clc * ri12))
+                    b = ri14 * tc[k] / (sr2 * 2 * ri12) + alfgap * dr2 * ri * a_coef[k-1] * b_coef[k-1] / (dt.clc * ri12)
+                    a_coef.append(a)
+                    b_coef.append(b) 
+                else:
+                    ri = dt.r3 + dr2 * (k - 5)
+                    ri1 = ri - dr2 / 2
+                    ri2 = ri + dr2 / 2
+                    a = 1 / (ri * (2 + 1 / sr2) / ri2 - ri1 * a_coef[k-1] / ri2)
+                    b = ri * tc[k] / (ri2 * sr2) + ri1 * a_coef[k-1] * b_coef[k-1] / ri2
+                    a_coef.append(a)
+                    b_coef.append(b)
+                
+            for k in range(len(tc) - 1, -1, -1):
+                if k == len(tc) - 1:
+                    ri = dt.r4
+                    ri14 = ri - dr2 / 4
+                    ri12 = ri - dr2 / 2
+                    tc[k] = (tc[k] + alfa * t_i * sr2 * dr2 * 2 * ri / (dt.clc * ri14) + sr2 * 2 * ri12 * a_coef[k-1] * b_coef[k-1] / ri14) / (1 + sr2 * 2 * ri12 * (1 - a_coef[k-1]) / ri14 + alfa * sr2 * dr2 * 2 * ri / (dt.clc * ri14))
+                else:
+                    tc[k] = a_coef[k] * (b_coef[k] + tc[k + 1])
+            t_fuel[j] = tc   
             h += dx
             i += 1
             z += dx
@@ -82,7 +145,6 @@ def start_calc(G, pg = True):
         time += dt.dt
         T0 = T1[:]
         T1 = [T1[-1]] + [0] * dt.N
-    return T0
+    return (T0, t_fuel)
 
-a = start_calc(23761)
-print(a)
+
