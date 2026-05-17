@@ -2,11 +2,11 @@
 import Data as dt
 import functions as fc
 from math import pi, exp
-import saor
+#import saor
 import start
-import hydraulic as hc
+import hydraulic_test as hc
 from gui import create_default_temp_plot
-datas = start.start_calc(21000)
+datas = start.start_calc(dt.Gpb)
 T0 = datas[0]
 
 p = hc.pressure_balance(dt.Gpb, T0)
@@ -17,8 +17,8 @@ din = fc.din_count()
 plotter = create_default_temp_plot()
  
 h = 2.25
-dtime = 10000
-time = 20
+dtime = 170000
+time = 0
 n = 0
 # Цикл естественной циркуляции
 # 1.Активная зона  2.Область до тягового участка  3. Тяговый участок до отметки естественной циркуляции
@@ -36,8 +36,9 @@ def part(n, f, h, G, dtt):
         T1[i] = t_k_1
         #fc.kurrent(f, t_k_1, G, dx, dtt)
         i += 1          
-G = 21000
+
 Q_veg = dt.Q  
+G = dt.Gpb
 dtt = dt.dt 
 step = 0
 t_f = datas[1]
@@ -46,10 +47,10 @@ while time < dtime:
     dx = dt.h_az / dt.n_az
     dt_dx = dtt / dx
     z = 0
-
-    p_nasos = p_0 * exp(-(time) / 60)
-
-    Q_veg = fc.residual_power(time - 10)
+    if time > 10:
+        p_nasos = p_0 * exp(-(time - 10) / 60)
+    if time > 20:
+        Q_veg = fc.residual_power(time - 20)
     plotter.push_point("AZ_in", time, T1[i-1])
     for j in range(dt.n_az):
         tc = t_f[j]
@@ -155,10 +156,11 @@ while time < dtime:
     # Горизонтальный участок до САОР
     part(dt.n_5, dt.f_5, dt.l_5, G / 4, dtt)
     # CАОР
-    t_saor = saor.saor_calc(T1[i-1], G/12)
+    part(dt.n_saor, dt.f_saor, dt.h_saor, G / 12, dtt)
+    '''t_saor = saor.saor_calc(T1[i-1], G/12)
     for j in range(len(t_saor)):
         T1[i] = t_saor[j]
-        i += 1
+        i += 1'''
     plotter.push_point("PG_out", time, T1[i-1])
     # Опускной участок
     part(dt.n_6, dt.f_6, dt.h_6, G / 12, dtt)
