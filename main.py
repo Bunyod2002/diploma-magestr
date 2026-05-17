@@ -2,7 +2,7 @@
 import Data as dt
 import functions as fc
 from math import pi, exp
-#import saor
+import saor
 import start
 import hydraulic_test as hc
 from gui import create_default_temp_plot
@@ -138,7 +138,7 @@ while time < dtime:
     dx = dt.h_pg / dt.n_pg
     dt_dx = dtt / dx
     plotter.push_point("PG_in", time, T1[i-1])
-    if time > 10:
+    if time > 100:
         part(dt.n_pg, dt.f_pg, dt.h_pg, G / 4, dtt)
     else:
         for j in range(dt.n_pg):
@@ -156,11 +156,10 @@ while time < dtime:
     # Горизонтальный участок до САОР
     part(dt.n_5, dt.f_5, dt.l_5, G / 4, dtt)
     # CАОР
-    part(dt.n_saor, dt.f_saor, dt.h_saor, G / 12, dtt)
-    '''t_saor = saor.saor_calc(T1[i-1], G/12)
+    t_saor = saor.saor_calc(T1[i-1], G/12)
     for j in range(len(t_saor)):
         T1[i] = t_saor[j]
-        i += 1'''
+        i += 1
     plotter.push_point("PG_out", time, T1[i-1])
     # Опускной участок
     part(dt.n_6, dt.f_6, dt.h_6, G / 12, dtt)
