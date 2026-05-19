@@ -3,21 +3,21 @@ import Data as dt
 import functions as fc
 from math import pi, exp
 import saor
-import start
-import hydraulic_test as hc
+#import start
+#import hydraulic_test as hc
 from gui import create_default_temp_plot
-datas = start.start_calc(dt.Gpb)
-T0 = datas[0]
+#datas = start.start_calc(dt.Gpb)
+T0 = [350 + 273.15] * (dt.N + 1)
 
-p = hc.pressure_balance(dt.Gpb, T0)
-p_0 = p[0] - p[1]
-p_nasos = p_0
-din = fc.din_count()
+#p = hc.pressure_balance(dt.Gpb, T0)
+#p_0 = p[0] - p[1]
+#p_nasos = p_0
+#din = fc.din_count()
 #t_draw = [0, 0, 0, 0]
 plotter = create_default_temp_plot()
  
 h = 2.25
-dtime = 170000
+dtime = 10000
 time = 0
 n = 0
 # Цикл естественной циркуляции
@@ -41,26 +41,22 @@ Q_veg = dt.Q
 G = dt.Gpb
 dtt = dt.dt 
 step = 0
-t_f = datas[1]
+t_f = dt.t_fuel.copy()
 while time < dtime:
     i = 1
     dx = dt.h_az / dt.n_az
     dt_dx = dtt / dx
     z = 0
-    if time > 10:
-        p_nasos = p_0 * exp(-(time - 10) / 60)
-    if time > 20:
-        Q_veg = fc.residual_power(time - 20)
     plotter.push_point("AZ_in", time, T1[i-1])
     for j in range(dt.n_az):
         tc = t_f[j]
         t_w = tc[-1]
-        if j == 5:
+        if j == 28:
             plotter.push_point("Flow_rate", time, t_w)
         t_i = T0[i]  # T_i-1_k
         t_i_1 = T0[i-1]  # T_i_k
         r = fc.ro(t_i_1 - 273.15)
-        alfa = fc.alphaPb(r, dt.f_az, dt.dg_az, G)
+        alfa = fc.alphaPb(r, dt.f_az, dt.dg_az, G) 
         t_k_1 = round(t_i + dt_dx * (G * dt.cp_Pb*(t_i_1 - t_i) + alfa * dt.s_tvel * (t_w - t_i)) / (dt.cp_Pb * r * dt.f_az), 3)
         T1[i] = t_k_1
         a_coef = []
@@ -88,7 +84,7 @@ while time < dtime:
                 b_coef.append(b) 
             elif k == 4:
                 alfgap1 = dt.clg / dt.delta
-                alfgap2 = dt.sigma * dt.eps1 * (tc[k] + tc[k+1]) * (tc[k] ** 2 + tc[k + 1] ** 2)
+                alfgap2 = dt.sigma * dt.eps1 * (tc[k] + tc[k+1] ) * (tc[k]  ** 2 + tc[k + 1] ** 2)
                 alfgap = alfgap1 + alfgap2
                 ri = dt.r2 
                 ri14 = ri - dr1 / 4
@@ -138,19 +134,18 @@ while time < dtime:
     dx = dt.h_pg / dt.n_pg
     dt_dx = dtt / dx
     plotter.push_point("PG_in", time, T1[i-1])
-    if time > 100:
-        part(dt.n_pg, dt.f_pg, dt.h_pg, G / 4, dtt)
-    else:
-        for j in range(dt.n_pg):
-            t_i = T0[i]  # T_i-1_k
-            t_i_1 = T0[i - 1]  # T_i_k
-            r = fc.ro(t_i_1 - 273.15)
-            alfa = fc.alphaPb(r, dt.f_pg, dt.dg_pg, G / 4)
-            t_k_1 = round(t_i + dt_dx * (G / 4 * dt.cp_Pb * (t_i_1 - t_i) + alfa * dt.s_pg * (dt.T_pg - t_i)) / (r * dt.f_pg * dt.cp_Pb), 3)
-            T1[i] = t_k_1
-            h -= dx
-            i += 1
-    
+
+
+    for j in range(dt.n_pg):
+        t_i = T0[i]  # T_i-1_k
+        t_i_1 = T0[i - 1]  # T_i_k
+        r = fc.ro(t_i_1 - 273.15)
+        alfa = fc.alphaPb(r, dt.f_pg, dt.dg_pg, G / 4)
+        t_k_1 = round(t_i + dt_dx * (G / 4 * dt.cp_Pb * (t_i_1 - t_i) + alfa * dt.s_pg * (dt.T_pg - t_i)) / (r * dt.f_pg * dt.cp_Pb), 3)
+        T1[i] = t_k_1
+        h -= dx
+        i += 1
+
     # Подъемный участок через насос
     part(dt.n_4, dt.f_4, dt.h_4, G / 4, dtt)
     # Горизонтальный участок до САОР
@@ -167,14 +162,14 @@ while time < dtime:
     part(dt.n_7, dt.f_7, dt.l_7, G / 4, dtt)
     if step % 10 == 0:
         plotter.redraw()
-    p = hc.pressure_balance(G, T1)
+    #p = hc.pressure_balance(G, T1)
     time += dtt
-    G += dtt * (p_nasos + p[1] - p[0]) / din
-    dtt = fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az)
+    #G += dtt * (p_nasos + p[1] - p[0]) / din
+    #dtt = fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az)
     T0 = T1[:]
     T1 = [T1[-1]] + [0] * dt.N
     step += 1
-    print(G, time, p_nasos)
+
 plotter.hold()
 
 

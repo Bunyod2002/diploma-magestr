@@ -36,7 +36,7 @@ def start_calc(G, pg = True):
         z = 0
         for j in range(dt.n_az):
             tc = t_fuel[j]
-            t_w = tc[-1]
+            t_w = tc[-1] + 273.15
             t_i = T0[i]  # T_i-1_k
             t_i_1 = T0[i-1]  # T_i_k
             r = fc.ro(t_i_1 - 273.15)
@@ -68,7 +68,7 @@ def start_calc(G, pg = True):
                     b_coef.append(b) 
                 elif k == 4:
                     alfgap1 = dt.clg / dt.delta
-                    alfgap2 = dt.sigma * dt.eps1 * (tc[k] + tc[k+1]) * (tc[k] ** 2 + tc[k + 1] ** 2)
+                    alfgap2 = dt.sigma * dt.eps1 * (tc[k] +273.15 + tc[k+1] + 273.15) * ((tc[k] + 273.15) ** 2 + (tc[k + 1] + 273.15) ** 2)
                     alfgap = alfgap1 + alfgap2
                     ri = dt.r2 
                     ri14 = ri - dr1 / 4
