@@ -5,7 +5,7 @@ import saor
 
 def start_calc(G, pg = True):
     T0 = [350 + 273.15] * (dt.N + 1)
-    dtime = 200
+    dtime = 150
     dtt = dt.dt
     time = 0
     t_fuel = dt.t_fuel.copy()
@@ -36,7 +36,7 @@ def start_calc(G, pg = True):
         z = 0
         for j in range(dt.n_az):
             tc = t_fuel[j]
-            t_w = tc[-1] + 273.15
+            t_w = tc[-1] 
             t_i = T0[i]  # T_i-1_k
             t_i_1 = T0[i-1]  # T_i_k
             r = fc.ro(t_i_1 - 273.15)

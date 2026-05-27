@@ -32,7 +32,7 @@ class RealtimeTempPlot:
             # авто-добавление серии, если забыли объявить
             self.add_series(name, label=name)
 
-        Tc = Tk - 273.15
+        Tc = Tk 
         s = self.series[name]
         s["t"].append(t)
         s["T"].append(Tc)

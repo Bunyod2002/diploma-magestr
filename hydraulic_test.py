@@ -3,8 +3,8 @@ from Data import g
 import Data as dt
 import saor_data as sdt
 from math import log10, pi
-import start
-T = start.start_calc(23761)
+
+
 # Гидравлические сопротивления активной зоны
 def dp_friction_az(G, T):
     """Определяет потери на трение в активной зоне"""
@@ -15,15 +15,15 @@ def dp_friction_az(G, T):
 
 def dp_az_pg_in_and_out(G, T, koef):
     """Определяет потери на местные сопротивления на входе и выходе из активной зоны"""
-    r = fc.ro(T - 273.15)
+    r = fc.ro(T)
     w = fc.vel(dt.f_az, T, G)
     return koef * r * w * w * 0.5
 
 def dp_az_spacer(G, T):
     """Определяет потери в АЗ для дистационирующих решеток"""
-    rho = fc.ro(T - 273.15)
+    rho = fc.ro(T)
     w = G / (rho * dt.f_az)
-    v = (43.8 - 7.57 * 0.01 * (T - 273.15) + 0.467 * 0.0001 * (T - 273.15)**2) * 10 **(-8)  # кинематическая вязкость свинца
+    v = (43.8 - 7.57 * 0.01 * (T) + 0.467 * 0.0001 * (T)**2) * 10 **(-8)  # кинематическая вязкость свинца
     Re = w * dt.dg_az / v # Число Рейнольдса
     eps_spacer = 0.2
     cv = min(
@@ -38,7 +38,7 @@ def dp_bundle_pg(G, T, x):
     """Определяет потери при оптекании змеевика в парогенераторе"""
     r = fc.ro(T - 273.15)
     w = fc.vel(dt.f_pg, T, G)
-    v = (43.8 - 7.57 * 0.01 * (T - 273.15) + 0.467 * 0.0001 * (T - 273.15)**2) * 10 **(-8)  # кинематическая вязкость свинца
+    v = (43.8 - 7.57 * 0.01 * (T) + 0.467 * 0.0001 * (T)**2) * 10 **(-8)  # кинематическая вязкость свинца
     Re = w * dt.dg_pg / v # Число Рейнольдса
     eu = 0.55 + 1800.0 / Re + 2.0e6 / (Re ** 2)
     return eu * (x / dt.dg_pg) * r * w * w * 0.5
@@ -60,9 +60,9 @@ def dp_friction(G, T, x, f, d = None):
     длина участка, площадь участка и гидравлический диаметр"""
     if not d:
         d = (4 * f / pi) ** 0.5
-    r = fc.ro(T - 273.15)
+    r = fc.ro(T)
     w = fc.vel(f, T, G)
-    v = (43.8 - 7.57 * 0.01 * (T - 273.15) + 0.467 * 0.0001 * (T - 273.15)**2) * 10 **(-8)  # кинематическая вязкость свинца
+    v = (43.8 - 7.57 * 0.01 * (T) + 0.467 * 0.0001 * (T)**2) * 10 **(-8)  # кинематическая вязкость свинца
     Re = w * d / v # Число Рейнольдса
     e_fric = friction_koef(Re)
     dp_fric = e_fric * (x / d) * r * w * w * 0.5
@@ -71,7 +71,7 @@ def dp_friction(G, T, x, f, d = None):
 def dp_gravity(T, x):
     """Возвращает гравитационный напор, со знаком + если движение вверх
     со знаком - если движение вниз"""
-    r = fc.ro(T - 273.15)
+    r = fc.ro(T)
     return r * g * x
 
 # Гидравлические сопротивления для САОР
@@ -86,7 +86,7 @@ def dp_friction_saor(G, T1):
 # Местные сопротивления
 def dp_expansion(G, T, A1, A2):
     """Внезапное расширение A1 -> A2 (A2 > A1)"""
-    rho = fc.ro(T - 273.15)
+    rho = fc.ro(T)
     w = G / (rho * A1)
     beta = A1 / A2
     xi = (1 - beta) ** 2
@@ -94,7 +94,7 @@ def dp_expansion(G, T, A1, A2):
 
 def dp_contraction(G, T, A1, A2):
     """Внезапное сужениеA1 -> A2 (A2 < A1)"""
-    rho = fc.ro(T - 273.15)
+    rho = fc.ro(T)
     w = G / (rho * A2)
     beta = A2 / A1
     xi = 0.5 * (1 / beta - 1)
@@ -102,13 +102,13 @@ def dp_contraction(G, T, A1, A2):
 
 def dp_bend_90(G, T, A, xi=0.5):
     """Поворот на 90 градусов"""
-    rho = fc.ro(T - 273.15)
+    rho = fc.ro(T)
     w = G / (rho * A)
     return xi * 0.5 * rho * w**2
 
 def dp_bend_180(G, T, A, xi=1.5):
     """Разворот на 180 градусов"""
-    rho = fc.ro(T - 273.15)
+    rho = fc.ro(T)
     w = G / (rho * A)
     return xi * 0.5 * rho * w**2
 
