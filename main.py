@@ -147,8 +147,8 @@ while time < dtime:
             t_i = T0[i]  # T_i-1_k
             t_i_1 = T0[i - 1]  # T_i_k
             r = fc.ro(t_i_1)
-            alfa = fc.alphaPb(r, dt.f_pg, dt.dg_pg, G / 4)
-            t_k_1 = round(t_i + dt_dx * (G / 4 * dt.cp_Pb * (t_i_1 - t_i) + alfa * dt.s_pg * (dt.T_pg - t_i)) / (r * dt.f_pg * dt.cp_Pb), 3)
+            alfa = fc.alphaPb(r, dt.f_pg, dt.dg_pg, G / 8)
+            t_k_1 = round(t_i + dt_dx * (G / 8 * dt.cp_Pb * (t_i_1 - t_i) + alfa * pi * dt.d_tube * dx * (dt.T_pg - t_i)) / (r * dt.f_pg * dt.cp_Pb), 3)
             T1[i] = t_k_1
             h -= dx
             i += 1

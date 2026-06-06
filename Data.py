@@ -47,12 +47,16 @@ d_3 = 2
 f_3 = pi * d_3 ** 2 / 4
 # Парогенератор
 d_pg = 2
-s = (pi * d_pg ** 2 / 4) * 8 
+s_pg = pi * d_pg ** 2 / 4
+f_pg = 1
+d_tube = (4 *(s_pg - f_pg) / pi) ** 0.5
+dg_pg = 0.1
+'''s = (pi * d_pg ** 2 / 4) * 8 
 f_pg = 4.5
 s_pg = s - f_pg 
 d_tube = (4 * s_pg / pi) ** 0.5
 #dg_pg = 4 * f_pg / (pi * (d_tube + 8 * d_pg))
-dg_pg = 0.05
+dg_pg = 0.05'''
 h_pg = 7.75 - 3.05
 n_pg = 47
 # Подъемный участок через ГЦН

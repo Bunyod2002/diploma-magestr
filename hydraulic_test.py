@@ -147,7 +147,7 @@ def pressure_balance(G: float, T: list[float]):
         i += 1
     dx = dt.h_pg / dt.n_pg
     for _ in range(dt.n_pg):
-        p_loses += dp_bundle_pg(G / 4, T[i], dx)
+        p_loses += dp_bundle_pg(G / 8, T[i], dx)
         p_driving += dp_gravity(T[i], dx)
         i += 1  
     dx = dt.h_4 / dt.n_4
