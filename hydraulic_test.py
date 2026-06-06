@@ -122,7 +122,7 @@ def pressure_balance(G: float, T: list[float]):
     dx = dt.h_az / dt.n_az
     p_loses += dp_az_pg_in_and_out(G, T[i], 0.5)
     for j in range(dt.n_az):
-        p_loses += 4.6 * dp_friction_az(G, T[i])
+        p_loses += dp_friction_az(G, T[i])
         p_loses += dp_gravity(T[i], dx)
         i += 1
  
@@ -147,7 +147,7 @@ def pressure_balance(G: float, T: list[float]):
         i += 1
     dx = dt.h_pg / dt.n_pg
     for _ in range(dt.n_pg):
-        p_loses += 23 * dp_bundle_pg(G / 4, T[i], dx)
+        p_loses += dp_bundle_pg(G / 4, T[i], dx)
         p_driving += dp_gravity(T[i], dx)
         i += 1  
     dx = dt.h_4 / dt.n_4
@@ -180,3 +180,4 @@ def pressure_balance(G: float, T: list[float]):
         i += 1
 
     return p_loses, p_driving
+

@@ -8,16 +8,16 @@ import hydraulic_test as hc
 from gui import create_default_temp_plot
 #datas = start.start_calc(dt.Gpb)
 #T0 = datas[0]
-T0 = [350] * (dt.N + 1)
+T0 = [420] * (dt.N + 1)
 p = hc.pressure_balance(dt.Gpb, T0)
 p_0 = p[0] - p[1]
 p_nasos = p_0
 din = fc.din_count()
 #t_draw = [0, 0, 0, 0]
 plotter = create_default_temp_plot()
-
+plotter2 = create_default_temp_plot()
 h = 2.25
-dtime = 100
+dtime = 10000
 time = 0
 n = 0
 # Цикл естественной циркуляции
@@ -47,21 +47,21 @@ while time < dtime:
     dx = dt.h_az / dt.n_az
     dt_dx = dtt / dx
     z = 0
-    if time > 150:
-        p_nasos = p_0 * exp(- (time-150) / 60)
-    if time > 170:
-        Q_veg = fc.residual_power(time - 170)
+    if time > 100:
+        p_nasos = max(-11100 * (time - 100) + 111000, 0)
+    if time > 110:
+        Q_veg = fc.residual_power(time - 110)
     plotter.push_point("AZ_in", time, T1[i-1])
     for j in range(dt.n_az):
         tc = t_f[j]
         t_w = tc[-1] 
-        if j == 28:
-            plotter.push_point("Flow_rate", time, t_w)
+        if j == dt.n_az - 1:
+            plotter.push_point("Stenka", time, t_w)
         t_i = T0[i]  # T_i-1_k
         t_i_1 = T0[i-1]  # T_i_k
         r = fc.ro(t_i_1)
         alfa = fc.alphaPb(r, dt.f_az, dt.dg_az, G) 
-        t_k_1 = round(t_i + dt_dx * (G * dt.cp_Pb*(t_i_1 - t_i) + alfa * dt.s_tvel * (t_w - t_i)) / (dt.cp_Pb * r * dt.f_az), 3)
+        t_k_1 = t_i + dt_dx * (G * dt.cp_Pb*(t_i_1 - t_i) + alfa * (pi * dt.N_tvel * 2 * dt.r4 * dx) * (t_w - t_i)) / (dt.cp_Pb * r * dt.f_az)
         T1[i] = t_k_1
         a_coef = []
         b_coef = []
@@ -69,8 +69,8 @@ while time < dtime:
         dr2 = (dt.r4 - dt.r3) / (dt.n - 1)
         sr1 = dt.at * dtt / (dr1 ** 2)
         sr2 = dt.ac * dtt / (dr2 ** 2)
-        qv = Q_veg / (dt.n_az * dx * pi * (dt.r2 ** 2 - dt.r1**2))
-        #qv = fc.ql(Q_veg, z) / (pi * (dt.r2 ** 2 - dt.r1**2))
+        #qv = Q_veg / (dt.n_az * dx * pi * (dt.r2 ** 2 - dt.r1**2))
+        qv = fc.ql(Q_veg, z) / (pi * (dt.r2 ** 2 - dt.r1**2))
         for k in range(9):
             if k == 0:
                 ri14 = dt.r1 + dr1 / 4
@@ -140,7 +140,7 @@ while time < dtime:
     dt_dx = dtt / dx
     plotter.push_point("PG_in", time, T1[i-1])
 
-    if time > 150:
+    if time > 110:
         part(dt.n_pg, dt.f_pg, dt.h_pg, G / 4, dtt)
     else:
         for j in range(dt.n_pg):
@@ -169,14 +169,17 @@ while time < dtime:
     part(dt.n_7, dt.f_7, dt.l_7, G / 4, dtt)
     if step % 10 == 0:
         plotter.redraw()
+        plotter2.redraw()
     p = hc.pressure_balance(G, T1)
     time += dtt
     G += dtt * (p_nasos + p[1] - p[0]) / din
-    #dtt = fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az)
+    '''if time > 50:
+        dtt = min(fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az), 0.05)'''
     T0 = T1[:]
     T1 = [T1[-1]] + [0] * dt.N
     step += 1
-    print(G)
+    plotter2.push_point("Flow_rate", time, G)
+    print(G, dtt, p_nasos)
 print(t_f)
 plotter.hold()
 
