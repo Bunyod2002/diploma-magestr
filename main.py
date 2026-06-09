@@ -47,10 +47,10 @@ while time < dtime:
     dx = dt.h_az / dt.n_az
     dt_dx = dtt / dx
     z = 0
-    if time > 100:
+    if time > 200:
         p_nasos = max(-11100 * (time - 100) + 111000, 0)
-    if time > 110:
-        Q_veg = fc.residual_power(time - 110)
+    if time > 210:
+        Q_veg = fc.residual_power(time - 210)
     plotter.push_point("AZ_in", time, T1[i-1])
     for j in range(dt.n_az):
         tc = t_f[j]
@@ -69,7 +69,6 @@ while time < dtime:
         dr2 = (dt.r4 - dt.r3) / (dt.n - 1)
         sr1 = dt.at * dtt / (dr1 ** 2)
         sr2 = dt.ac * dtt / (dr2 ** 2)
-        #qv = Q_veg / (dt.n_az * dx * pi * (dt.r2 ** 2 - dt.r1**2))
         qv = fc.ql(Q_veg, z) / (pi * (dt.r2 ** 2 - dt.r1**2))
         for k in range(9):
             if k == 0:
@@ -140,15 +139,15 @@ while time < dtime:
     dt_dx = dtt / dx
     plotter.push_point("PG_in", time, T1[i-1])
 
-    if time > 110:
-        part(dt.n_pg, dt.f_pg, dt.h_pg, G / 4, dtt)
+    if time > 200:
+        part(dt.n_pg, dt.f_pg, dt.h_pg, G / 8, dtt)
     else:
         for j in range(dt.n_pg):
             t_i = T0[i]  # T_i-1_k
             t_i_1 = T0[i - 1]  # T_i_k
             r = fc.ro(t_i_1)
             alfa = fc.alphaPb(r, dt.f_pg, dt.dg_pg, G / 8)
-            t_k_1 = round(t_i + dt_dx * (G / 8 * dt.cp_Pb * (t_i_1 - t_i) + alfa * pi * dt.d_tube * dx * (dt.T_pg - t_i)) / (r * dt.f_pg * dt.cp_Pb), 3)
+            t_k_1 = round(t_i + dt_dx * (G / 8 * dt.cp_Pb * (t_i_1 - t_i) + alfa * 51 * dx * (dt.T_pg - t_i)) / (r * dt.f_pg * dt.cp_Pb), 3)
             T1[i] = t_k_1
             h -= dx
             i += 1
@@ -172,14 +171,17 @@ while time < dtime:
         plotter2.redraw()
     p = hc.pressure_balance(G, T1)
     time += dtt
-    G += dtt * (p_nasos + p[1] - p[0]) / din
-    '''if time > 50:
-        dtt = min(fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az), 0.05)'''
+    if time > 200:
+        G += dtt * (p_nasos + p[1] - p[0]) / din
+    if time > 220:
+        dtt = min(fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az), 0.03)
+    if time > 1000:
+        dtt = min(fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az), 0.05)
     T0 = T1[:]
     T1 = [T1[-1]] + [0] * dt.N
     step += 1
     plotter2.push_point("Flow_rate", time, G)
-    print(G, dtt, p_nasos)
+    print(G, dtt, p_nasos, alfa)
 print(t_f)
 plotter.hold()
 
