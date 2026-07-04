@@ -2,41 +2,44 @@ import matplotlib.pyplot as plt
 
 
 class RealtimeTempPlot:
-    """
-    Рисует несколько кривых T(t) на одном графике.
-    На вход обновления принимает температуру в Кельвинах, хранит/показывает в °C.
-    """
 
-    def __init__(self, title: str = "Температуры по участкам"):
+    def __init__(self, title="График", ylabel="Value"):
         plt.ion()
 
         self.fig, self.ax = plt.subplots(figsize=(9, 5))
         self.ax.set_title(title)
-        self.ax.set_xlabel("t, s")
-        self.ax.set_ylabel("T, °C")
+        self.ax.set_xlabel("t, часы")
+        self.ax.set_ylabel(ylabel)
         self.ax.grid(True)
 
         self.series = {}
         self._legend_drawn = False
 
-    def add_series(self, name: str, label: str | None = None, lw: float = 2.0):
+    def add_series(self, name: str, label=None, lw=2.0):
         if label is None:
             label = name
+
         line, = self.ax.plot([], [], lw=lw, label=label)
-        self.series[name] = {"t": [], "T": [], "line": line}
+
+        self.series[name] = {
+            "t": [],
+            "Y": [],
+            "line": line
+        }
+
         self._legend_drawn = False
 
-    def push_point(self, name: str, t: float, Tk: float):
-        """Добавить точку. Tk — в Кельвинах, на графике будет в °C."""
-        if name not in self.series:
-            # авто-добавление серии, если забыли объявить
-            self.add_series(name, label=name)
+    def push_point(self, name: str, t: float, value: float):
 
-        Tc = Tk 
+        if name not in self.series:
+            self.add_series(name)
+
         s = self.series[name]
+
         s["t"].append(t)
-        s["T"].append(Tc)
-        s["line"].set_data(s["t"], s["T"])
+        s["Y"].append(value)
+
+        s["line"].set_data(s["t"], s["Y"])
 
     def redraw(self):
         if not self._legend_drawn:
@@ -47,27 +50,22 @@ class RealtimeTempPlot:
         self.ax.autoscale_view()
         plt.pause(0.001)
 
-    def close(self, block: bool = True):
+    def close(self, block=True):
         plt.ioff()
         plt.show(block=block)
-        
+
     def hold(self):
         plt.ioff()
         plt.show()
         
+def create_default_plot(parameter_name, unit, series):
 
+    p = RealtimeTempPlot(
+        title=f"{parameter_name}(t)",
+        ylabel=f"{parameter_name}, {unit}"
+    )
 
-def create_default_temp_plot():
-    """
-    Готовый набор линий под твой контур:
-    выход АЗ, выход ПГ, выход опускного, конец контура
-    """
-    p = RealtimeTempPlot("T(t) в ключевых сечениях контура")
-    p.add_series("AZ_in", label="АЗ (вход)")
-    p.add_series("AZ_out", label="АЗ (выход)")
-    p.add_series("PG_in", label="ПГ (вход)")
-    p.add_series("PG_out", label="ПГ выход")
-    p.add_series("Stenka", label="Стенка")
-    p.add_series("Flow_rate", label="Расход")
+    for key, label in series.items():
+        p.add_series(key, label=label)
+
     return p
-

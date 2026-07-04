@@ -5,7 +5,7 @@ from math import pi, exp
 import saor
 #import start
 import hydraulic_test as hc
-from gui import create_default_temp_plot
+from gui import create_default_plot
 #datas = start.start_calc(dt.Gpb)
 #T0 = datas[0]
 T0 = [420] * (dt.N + 1)
@@ -13,11 +13,12 @@ p = hc.pressure_balance(dt.Gpb, T0)
 p_0 = p[0] - p[1]
 p_nasos = p_0
 din = fc.din_count()
-#t_draw = [0, 0, 0, 0]
-plotter = create_default_temp_plot()
-plotter2 = create_default_temp_plot()
+t_draw = [0, 0, 0]
+plotter = create_default_plot("Температура", "°C", {"Az_in": "Вход в АЗ", "Az_out": "Выход из АЗ"})
+#plotter3 = create_default_plot("Расход", "кг/с", {"Flow_rate2": "Расход свинца"})
+#plotter4 = create_default_plot('Мощность', 'МВт', {"Reactor": "Мощность реактора", "Saor": "Отводимая мощность"})
 h = 2.25
-dtime = 10000
+dtime = 3 * 86400
 time = 0
 n = 0
 # Цикл естественной циркуляции
@@ -47,16 +48,16 @@ while time < dtime:
     dx = dt.h_az / dt.n_az
     dt_dx = dtt / dx
     z = 0
-    if time > 200:
-        p_nasos = max(-11100 * (time - 100) + 111000, 0)
-    if time > 210:
-        Q_veg = fc.residual_power(time - 210)
-    plotter.push_point("AZ_in", time, T1[i-1])
+    if time > 250:
+        p_nasos = max(-15500 * (time - 250) + 155000, 0)
+    if time > 260:
+        Q_veg = fc.residual_power(time - 260)
+    t_draw[0] = T1[i-1]
     for j in range(dt.n_az):
         tc = t_f[j]
         t_w = tc[-1] 
-        if j == dt.n_az - 1:
-            plotter.push_point("Stenka", time, t_w)
+        if j == (dt.n_az - 1):
+            t_draw[1] = t_w
         t_i = T0[i]  # T_i-1_k
         t_i_1 = T0[i-1]  # T_i_k
         r = fc.ro(t_i_1)
@@ -127,7 +128,7 @@ while time < dtime:
         h += dx
         i += 1
         z += dx
-    plotter.push_point("AZ_out", time, T1[i-1])
+    t_draw[2] = T1[i-1]
     # Область до тягового участка
     part(dt.n_1, dt.f_1, dt.h_1, G, dtt)
     # Тяговый участок
@@ -137,9 +138,8 @@ while time < dtime:
     # Парогенератор
     dx = dt.h_pg / dt.n_pg
     dt_dx = dtt / dx
-    plotter.push_point("PG_in", time, T1[i-1])
 
-    if time > 200:
+    if time > 250:
         part(dt.n_pg, dt.f_pg, dt.h_pg, G / 8, dtt)
     else:
         for j in range(dt.n_pg):
@@ -157,33 +157,48 @@ while time < dtime:
     # Горизонтальный участок до САОР
     part(dt.n_5, dt.f_5, dt.l_5, G / 4, dtt)
     # CАОР
-    t_saor = saor.saor_calc(T1[i-1] + 273.15, G/12)
+    t_saor = saor.saor_calc(T1[i-1] + 273.15, G/48)
+    t_in = T1[i-1]
     for j in range(len(t_saor)):
         T1[i] = t_saor[j] - 273.15
         i += 1
-    plotter.push_point("PG_out", time, T1[i-1])
+    t_out = T1[i-1]
     # Опускной участок
-    part(dt.n_6, dt.f_6, dt.h_6, G / 12, dtt)
+    part(dt.n_6, dt.f_6, dt.h_6, G / 48, dtt)
     # Горизонтальный участок до АЗ
     part(dt.n_7, dt.f_7, dt.l_7, G / 4, dtt)
-    if step % 10 == 0:
-        plotter.redraw()
-        plotter2.redraw()
+        #plotter2.redraw()'''
     p = hc.pressure_balance(G, T1)
-    time += dtt
-    if time > 200:
-        G += dtt * (p_nasos + p[1] - p[0]) / din
-    if time > 220:
-        dtt = min(fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az), 0.03)
-    if time > 1000:
-        dtt = min(fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az), 0.05)
     T0 = T1[:]
     T1 = [T1[-1]] + [0] * dt.N
     step += 1
-    plotter2.push_point("Flow_rate", time, G)
-    print(G, dtt, p_nasos, alfa)
-print(t_f)
+    if time > 250 and time < 300:
+        plotter.push_point('Az_in', (time - 250) / 3600, t_draw[0])
+        plotter.push_point('Az_out', (time - 250) / 3600, t_draw[2])
+    elif step % 20 == 0:
+        plotter.push_point('Az_in', (time - 250) / 3600, t_draw[0])
+        plotter.push_point('Az_out', (time - 250) / 3600, t_draw[2])
+    #if time > 400:
+        #plotter3.push_point("Flow_rate2", (time - 250) / 3600, G)
+    #if time > 261:
+        #plotter4.push_point('Reactor', (time - 250) / 3600, Q_veg * dt.N_tvel / 1000000)
+        #plotter4.push_point('Saor', (time - 250) / 3600, G * dt.cp_Pb * (t_in - t_out) / 1000000)
+    print(G, time, {"Вход": T0[0], "Выход:": T0[30]}, p_nasos)
+    time += dtt
+    if time > 250:
+        G += dtt * (p_nasos + p[1] - p[0]) / din
+    if time > 260:
+        dtt = min(fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az), 0.03)
+    if time > 1000:
+        dtt = min(fc.new_dt(dt.f_az, T1[30], G, dt.h_az / dt.n_az), 0.05)
+
+
+plotter.redraw()
+#plotter3.redraw()
+#plotter4.redraw()
 plotter.hold()
+#plotter3.hold()
+#plotter4.hold()
 
 
 
